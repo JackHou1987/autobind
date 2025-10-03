@@ -3,8 +3,6 @@
  */
 package cn.com.hjack.autobind;
 
-import cn.com.hjack.autobind.MapConvertFeature;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -62,7 +60,7 @@ public @interface AutoBindField {
     @Deprecated
     boolean fieldExpand() default false;
 
-    String format() default "";
+    String format() default "yyyy-MM-dd HH:mm:ss";
 
     String decimalFormat() default "";
 
@@ -88,7 +86,7 @@ public @interface AutoBindField {
 
     /**
      * @Title: customConverter
-     * @Description: class for cn.com.yitong.actions.autobind.Converter
+     * @Description: class for cn.com.yitong.actions.autobind.BeanBinder.Converter
      * @return: Class<?>
      */
     Class<?> customConverter() default Void.class;
@@ -98,4 +96,6 @@ public @interface AutoBindField {
     MapConvertFeature[] mapConvertFeatures() default {};
 
     String charset() default "UTF-8";
+
+    String[] attributeMap() default "";
 }

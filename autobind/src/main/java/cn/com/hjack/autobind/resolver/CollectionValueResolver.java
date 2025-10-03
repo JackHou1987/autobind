@@ -3,21 +3,15 @@
  */
 package cn.com.hjack.autobind.resolver;
 
+import cn.com.hjack.autobind.*;
+import cn.com.hjack.autobind.factory.TypeValueResolvers;
+import cn.com.hjack.autobind.factory.TypeWrappers;
+import cn.com.hjack.autobind.utils.Constants;
+import cn.com.hjack.autobind.utils.TypeUtils;
+import cn.com.hjack.autobind.validation.DefaultResult;
+
 import java.util.Collection;
 import java.util.List;
-
-import cn.com.hjack.autobind.factory.TypeValueResolvers;
-import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.factory.ConversionServiceProvider;
-import cn.com.hjack.autobind.ConvertFeature;
-import cn.com.hjack.autobind.ResolveConfig;
-import cn.com.hjack.autobind.Result;
-import cn.com.hjack.autobind.TypeValueResolver;
-import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.validation.DefaultResult;
-import cn.com.hjack.autobind.factory.TypeWrappers;
-import cn.com.hjack.autobind.utils.TypeUtils;
-import org.springframework.core.convert.ConversionService;
 
 
 /**
@@ -84,17 +78,7 @@ public class CollectionValueResolver extends AbstractTypeValueResolver {
                 });
                 return DefaultResult.defaultSuccessResult(resultCollection);
             } else {
-                ConversionService conversionService = ConversionServiceProvider.getConversionService(config);
-                Collection<Object> resultCollection = TypeUtils.createCollection(targetType.resolve());
-                source.forEach(element -> {
-                    if (element != null) {
-                        Object value = super.convert(element, genericClass, conversionService);
-                        if (value != null) {
-                            resultCollection.add(value);
-                        }
-                    }
-                });
-                return DefaultResult.defaultSuccessResult(resultCollection);
+                return DefaultResult.errorResult(null, Constants.FAIL_CODE, "can not convert source to target, can not find converter");
             }
         }
     }

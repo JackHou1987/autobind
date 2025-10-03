@@ -16,24 +16,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import cn.com.hjack.autobind.AutoBindField;
+import cn.com.hjack.autobind.*;
 import cn.com.hjack.autobind.factory.TypeWrappers;
-import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.ConvertFeature;
-import cn.com.hjack.autobind.FieldTypeWrapper;
-import cn.com.hjack.autobind.TypeValueResolver;
-import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.utils.CastUtils;
-import cn.com.hjack.autobind.utils.ClassWrapper;
-import cn.com.hjack.autobind.utils.FieldWrapper;
-import cn.com.hjack.autobind.utils.FieldWrapper.FieldChainNode;
-import cn.com.hjack.autobind.utils.TypeUtils;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
+import cn.com.hjack.autobind.utils.*;
+import javassist.*;
 import javassist.bytecode.ClassFile;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.StringUtils;
@@ -41,10 +27,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * @ClassName: DefaultJavaBeanResolverGenerator
- * @Description: TODO
+ * @Description: 对象生成器,负责生成各类代理对象，用于性能加速或者其他
  * @author houqq
  * @date: 2025年7月17日
- *
  */
 public class ObjectGenerator {
 
@@ -99,11 +84,10 @@ public class ObjectGenerator {
 
     /**
      * @Title: generateJavaBeanToMapProxy
-     * @Description: 生成java bean to map代理
+     * @Description: 生成java bean 到 map的代理
      * @param: java bean class
      * @param: java bean object
      * @return: 代理map
-     * @throws
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> generateJavaBeanToMapProxy(Class<?> beanClass, Object bean) {
@@ -117,7 +101,7 @@ public class ObjectGenerator {
             throw new IllegalStateException("bean must be an instance of beanclass");
         }
         try {
-            return this.beanToMapProxyCache.computeIfAbsent(beanClass, (key) -> {
+            return beanToMapProxyCache.computeIfAbsent(beanClass, (key) -> {
                 ClassPool pool = ClassPool.getDefault();
                 try {
                     generateJavaBeanToMapImportsStub(pool);
@@ -149,12 +133,26 @@ public class ObjectGenerator {
         pool.importPackage("cn.com.hjack.autobind.utils.CastUtils");
     }
 
+    /**
+     * @Title: generateBeanToMapProxyClass
+     * @Description: 生成bean到map的代理class
+     * @param: ClassPool
+     * @param: targetClass
+     * @return: CtClass
+     */
     private CtClass generateBeanToMapProxyClass(ClassPool pool, Class<?> targetClass) throws Exception {
         CtClass cls = pool.makeClass(String.format("cn.com.hjack.autobind.resolver.%s$BeanToMapProxy", targetClass.getSimpleName()));
         cls.setInterfaces(new CtClass[] {pool.get("java.util.Map")});
         return cls;
     }
 
+    /**
+     * @Title: generateBeanToMapProxyFields
+     * @Description: 生成bean到map的代理字段
+     * @param: beanClass
+     * @param: ClassPool
+     * @param: CtClass
+     */
     private void generateBeanToMapProxyFields(Class<?> beanClass, ClassPool pool, CtClass cls) throws Exception {
         CtField beanField = CtField.make(String.format("private %s bean;\n", TypeUtils.getCanonicalName(beanClass)), cls);
         cls.addField(beanField);
@@ -162,6 +160,13 @@ public class ObjectGenerator {
         cls.addField(entrySetField);
     }
 
+    /**
+     * @Title: generateBeanToMapProxyConstructs
+     * @Description: 生成bean到map的代理构造器
+     * @param: ClassPool
+     * @param: ClassWrapper
+     * @param: CtClass
+     */
     private void generateBeanToMapProxyConstructs(ClassPool pool, ClassWrapper beanClass, CtClass cls) throws Exception {
         CtConstructor constructor = new CtConstructor(new CtClass[] {pool.get(beanClass.getBeanCls().getName())}, cls);
         constructor.setBody(generateBeanToMapConstructContentStub(beanClass));
@@ -206,6 +211,14 @@ public class ObjectGenerator {
         return body.toString();
     }
 
+    /**
+     * @Title: generateBeanToMapProxyMethod
+     * @Description: 生成bean到map的代理方法
+     * @param: ClassPool
+     * @param: CtClass
+     * @param: java bean class
+     * @param: 被代理的方法
+     */
     private void generateBeanToMapProxyMethod(ClassPool pool, CtClass cls, ClassWrapper beanClass, Method method) throws Exception {
         Class<?> returnType = method.getReturnType();
         String methodContent = generateBeanToMapMethodStub(method, beanClass);
@@ -213,6 +226,13 @@ public class ObjectGenerator {
         cls.addMethod(ctMethod);
     }
 
+    /**
+     * @Title: generateBeanToMapMethodStub
+     * @Description: 生成bean到map的方法
+     * @param: 被代理的bean方法
+     * @param: ClassWrapper
+     * @return: String
+     */
     private String generateBeanToMapMethodStub(Method method, ClassWrapper beanClass) {
         StringBuilder body = new StringBuilder();
         body.append("{\n");
@@ -251,7 +271,7 @@ public class ObjectGenerator {
 
     /**
      * @Title: generateLazyLoadProxy
-     * @Description: 生成lazy load代理
+     * @Description: 针对collection、map和jaavbean生成懒加载(直到调用其方法才实际进行初始化动作)代理
      * @param: 目标class
      * @param: supplier
      * @return: lazy load代理对象
@@ -305,7 +325,7 @@ public class ObjectGenerator {
         CtField actualObjectField = new CtField(pool.get(TypeUtils.getCanonicalName(targetClass)), "object", cls);
         actualObjectField.setModifiers(Modifier.PRIVATE);
         cls.addField(actualObjectField);
-        CtField lockField = CtField.make(" private java.util.concurrent.locks.Lock lock = new java.util.concurrent.locks.ReentrantLock();", cls);
+        CtField lockField = CtField.make("private java.util.concurrent.locks.Lock lock = new java.util.concurrent.locks.ReentrantLock();", cls);
         cls.addField(lockField);
     }
 
@@ -316,8 +336,14 @@ public class ObjectGenerator {
     }
 
     private String generateLazyLoadProxyConstructContentStub(Class<?> targetClass) {
-        return "{\n" + "  if ($1 == null) {" + "    throw new IllegalStateException(\"supplier can not be null\");\n"
-                + "  }" + "  this.supplier = $1;\n" + "}\n";
+        StringBuilder body = new StringBuilder();
+        body.append("{\n");
+        body.append("  if ($1 == null) {");
+        body.append("    throw new IllegalStateException(\"supplier can not be null\");\n");
+        body.append("  }");
+        body.append("  this.supplier = $1;\n");
+        body.append("}\n");
+        return body.toString();
     }
 
     private void generateLazyLoadProxyMethod(ClassPool pool, CtClass cls, Class<?> targetClass, Method method) throws Exception {
@@ -344,7 +370,7 @@ public class ObjectGenerator {
     private CtClass[] getExceptionClass(ClassPool pool, Method method) throws Exception {
         CtClass[] exceptionClass;
         Class<?>[] exceptionTypes = method.getExceptionTypes();
-        if (exceptionTypes.length == 0) {
+        if (exceptionTypes == null || exceptionTypes.length == 0) {
             exceptionClass = new CtClass[0];
         } else {
             exceptionClass = new CtClass[exceptionTypes.length];
@@ -355,6 +381,13 @@ public class ObjectGenerator {
         return exceptionClass;
     }
 
+    /**
+     * @Title: generateLazyLoadMethodStub
+     * @Description: 生成懒加载方法桩
+     * @param: 目标class
+     * @param: 被代理的方法
+     * @return: String
+     */
     private String generateLazyLoadMethodStub(Class<?> targetClass, Method method) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -362,9 +395,7 @@ public class ObjectGenerator {
         sb.append("   lock.lock();\n");
         sb.append("   if (this.object == null) {\n");
         sb.append("     try {\n");
-        sb.append("         this.object = (")
-                .append(TypeUtils.getCanonicalName(targetClass))
-                .append(") supplier.get();\n");
+        sb.append(String.format("         this.object = (%s) supplier.get();\n", TypeUtils.getCanonicalName(targetClass)));
         sb.append("     } finally {\n");
         sb.append("         lock.unlock();\n");
         sb.append("     }\n");
@@ -420,11 +451,9 @@ public class ObjectGenerator {
     /**
      * @Title: generateResolver
      * @Description: 生成TypeValueResolver, 只为map、array和java bean生成对应的resolver
-     * @param: @param sourceClass
-     * @param: @param targetType
-     * @param: @return
+     * @param: sourceClass
+     * @param: targetType
      * @return: TypeValueResolver
-     * @throws
      */
     public TypeValueResolver generateResolver(Class<?> sourceClass, TypeWrapper targetType) {
         if (sourceClass == null || targetType == null || targetType.resolve() == null) {
@@ -449,7 +478,6 @@ public class ObjectGenerator {
                     Class<?> resolverClass = ctClass.toClass();
                     return (TypeValueResolver) resolverClass.newInstance();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     return null;
                 }
             });
@@ -469,7 +497,6 @@ public class ObjectGenerator {
                     Class<?> resolverClass = ctClass.toClass();
                     return (TypeValueResolver) resolverClass.newInstance();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     return null;
                 }
             });
@@ -489,7 +516,6 @@ public class ObjectGenerator {
                     Class<?> resolverClass = ctClass.toClass();
                     return (TypeValueResolver) resolverClass.newInstance();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     return null;
                 }
             });
@@ -599,7 +625,6 @@ public class ObjectGenerator {
      * @param: 目标值类型
      * @param: map value 泛型类型
      * @return: String
-     * @throws
      */
     private String generateConvertBeanToMapStub(CtClass ctClass, Class<?> sourceClass, Class<?> targetClass, TypeWrapper targetGenericType) {
         StringBuilder body = new StringBuilder();
@@ -626,7 +651,7 @@ public class ObjectGenerator {
                 throw new IllegalStateException("can not find read method");
             }
             String fieldVarName = generateDefFieldValueVarStub(field);
-            FieldChainNode invokeNode = sourceClassWrapper.findFieldChainByFieldName(sendFieldName, new HashMap<>());
+            FieldWrapper.FieldChainNode invokeNode = sourceClassWrapper.findFieldChainByFieldName(sendFieldName, new HashMap<>());
             String findValueCode = generateFindJavaBeanFieldValueMethodStub(sourceClass, invokeNode, null, sendFieldName);
             if (StringUtils.isEmpty(findValueCode)) {
                 return;
@@ -667,7 +692,6 @@ public class ObjectGenerator {
      * @param: 源值变量名称
      * @param: map entry value类型
      * @return: String
-     * @throws
      */
     private String generateConvertFieldToEntryStub(String sourceValueVarName, TypeWrapper mapEntryValueType) {
         StringBuilder body = new StringBuilder();
@@ -682,15 +706,15 @@ public class ObjectGenerator {
     /**
      * @Title: generateFindValueMethod
      * @Description: 从source java bean中找到字段值
-     * @param: java bean class
-     * @param: java bean field chain node
+     * @param: source java bean class
+     * @param: 从source java bean class搜索相应字段的field chain
      * @param: 目标字段类型(目标java bean字段class,如果目标为map,则为空)
      * @param: 目标字段名称
      * @return: 代码桩
      */
-    private String generateFindJavaBeanFieldValueMethodStub(Class<?> sourceClass, FieldChainNode sourceChainNode, Class<?> targetFieldClass, String targetFieldName) {
+    private String generateFindJavaBeanFieldValueMethodStub(Class<?> sourceClass, FieldWrapper.FieldChainNode sourceChainNode, Class<?> targetFieldClass, String targetFieldName) {
         StringBuilder body = new StringBuilder();
-        if (sourceChainNode.getCurrent() == null) {
+        if (sourceChainNode.getCurrent() == null) { // 如果chain node为空,且目标字段为java bean，则将source java bean转为map返回
             if (TypeUtils.isJavaBeanClass(targetFieldClass)) {
                 body.append(String.format("private Object %sValue(%s source) {\n", targetFieldName, TypeUtils.getCanonicalName(sourceClass)));
                 if (TypeUtils.isJavaBeanClass(sourceClass)) {
@@ -739,7 +763,7 @@ public class ObjectGenerator {
         }
     }
 
-    private String generateFindJavaBeanFieldValueBodyStub(FieldChainNode chainNode, String targetFieldName, AtomicInteger count) {
+    private String generateFindJavaBeanFieldValueBodyStub(FieldWrapper.FieldChainNode chainNode, String targetFieldName, AtomicInteger count) {
         StringBuilder body = new StringBuilder();
         int countValue = count.intValue();
         if (chainNode == null) {
@@ -752,7 +776,7 @@ public class ObjectGenerator {
             String primitiveTypeName = TypeUtils.getPrimitiveClassWrapName(field.getField().getType());
             body.append(String.format("%s %s_%s = CastUtils.toWrap%sValue(%s_%s.%s());\n", primitiveTypeName, targetFieldName, count.incrementAndGet(), primitiveTypeName, targetFieldName, countValue, field.getReadMethod().getName()));
         } else {
-            body.append(TypeUtils.getCanonicalName(field.getField().getType()) + " " + targetFieldName + count.incrementAndGet() + " = " + targetFieldName + countValue + "." + field.getReadMethod().getName() + "(); \n");
+            body.append(String.format("%s %s = %s.%s();\n", TypeUtils.getCanonicalName(field.getField().getType()), targetFieldName + count.incrementAndGet(), targetFieldName + countValue, field.getReadMethod().getName()));
             body.append(String.format("%s %s_%s = %s_%s.%s();\n", TypeUtils.getCanonicalName(field.getField().getType()), targetFieldName, count.incrementAndGet(), targetFieldName, countValue, field.getReadMethod().getName()));
         }
         body.append(generateFindJavaBeanFieldValueBodyStub(chainNode.getNext(), targetFieldName, count));
@@ -777,7 +801,14 @@ public class ObjectGenerator {
         ctClass.addMethod(resolveMethod);
     }
 
-
+    /**
+     * @Title: generateConvertBeanToBeanStub
+     * @Description: 生成将bean转换为bean代码桩
+     * @param: CtClass
+     * @param: sourceClass
+     * @param: TypeWrapper
+     * @return: String
+     */
     private String generateConvertBeanToBeanStub(CtClass ctClass, Class<?> sourceClass, TypeWrapper targetType) {
         StringBuilder body = new StringBuilder();
         body.append("public cn.com.hjack.autobind.Result doResolveValue(Object object, TypeWrapper targetType, ResolveConfig config) throws Exception { \n");
@@ -804,7 +835,7 @@ public class ObjectGenerator {
             }
             String varName = generateDefFieldValueVarStub(targetField);
             // 找到与目标字段名称对应的源字段调用链如(targetField: sourceField->sourceField1->targetField)
-            FieldChainNode chainNode = sourceClassWrapper.findFieldChainByFieldName(targetField.getRecvFieldName(), new HashMap<>());
+            FieldWrapper.FieldChainNode chainNode = sourceClassWrapper.findFieldChainByFieldName(targetField.getRecvFieldName(), new HashMap<>());
             String getFieldValueMethodBody = generateFindJavaBeanFieldValueMethodStub(sourceClass, chainNode, targetField.getFieldType(), targetField.getFieldNmae());
             try {
                 CtMethod getValueMethod = CtNewMethod.make(getFieldValueMethodBody, ctClass);
@@ -840,6 +871,13 @@ public class ObjectGenerator {
         return body.toString();
     }
 
+    /**
+     * @Title: generateConvertMapToBeanStub
+     * @Description: 生成将map转化为bean的代码桩
+     * @param: CtClass
+     * @param: TypeWrapper
+     * @return: String
+     */
     private String generateConvertMapToBeanStub(CtClass ctClass, TypeWrapper typeWrapper) {
         StringBuilder body = new StringBuilder();
         body.append("public cn.com.hjack.autobind.Result doResolveValue(Object object, TypeWrapper targetType, ResolveConfig config) throws Exception { \n");
@@ -866,7 +904,7 @@ public class ObjectGenerator {
                 defaultValue = autoBind.defaultValue();
             }
             String varName = generateDefFieldValueVarStub(field);
-            body.append(String.format("Object %s = (Object) BeanMapper.getValue(source, \"%s\", %s, \"%s\");\n", varName, field.getRecvFieldName(), TypeUtils.getCanonicalNameWithSuffix(field.getFieldType()), defaultValue));
+            body.append(String.format("Object %s = (Object) BeanMapper.getValueOrDefault(source, \"%s\", %s, \"%s\");\n", varName, field.getRecvFieldName(), TypeUtils.getCanonicalNameWithSuffix(field.getFieldType()), defaultValue));
             body.append(generateConvertFieldOrEntryToFieldStub(varName, null, targetClass, TypeWrappers.getFieldType(field.getField(), targetClass, typeWrapper.resolveVariableContext()), field));
         });
         body.append(generateGlobalValidateStub());
@@ -888,8 +926,8 @@ public class ObjectGenerator {
         StringBuilder body = new StringBuilder();
         body.append(String.format("if (%s != null) {\n", sourceValueVarName));
         body.append(generateDoConvertFieldOrEntryToFieldStub(sourceValueVarName, generateGetSourceClassName(sourceFieldClass, sourceValueVarName), targetClass, targetFieldType, targetField));
-        FieldChainNode invokeNode = ClassWrapper.forClass(targetClass).findFieldChainByFieldName(targetField.getFieldNmae(), new HashMap<>());
-        body.append(genreateFieldTypeAndVarAssignStub(targetField));
+        FieldWrapper.FieldChainNode invokeNode = ClassWrapper.forClass(targetClass).findFieldChainByFieldName(targetField.getFieldNmae(), new HashMap<>());
+        body.append(genreateFieldTypeAndVarAssignStub(targetField, "childResult.instance()"));
         body.append(String.format(SET_VALUE_CODE, targetField.getWriteMethod().getName(), generateDefFieldValueVarStub(targetField)));
         body.append("if (childResult.success()) {\n");
         // el表达式校验
@@ -905,13 +943,22 @@ public class ObjectGenerator {
     }
 
     private String generateDoConvertFieldOrEntryToFieldStub(String sourceValueVarName, String sourceFieldTypeName, Class<?> targetClass, FieldTypeWrapper targetFieldType, FieldWrapper targetField) {
-        return String.format(FIND_FIELD_CODE, TypeUtils.getCanonicalNameWithSuffix(targetClass), targetField.getFieldNmae())
-                + String.format(GET_FIELD_TYPE_CODE, "field", TypeUtils.getCanonicalNameWithSuffix(targetClass), "targetType")
-                + "TypeValueResolver resolver = TypeValueResolvers.getResolver(fieldType);\n"
-                + "if (resolver != null) { \n" + this.generateCopyResolveConfigStub(targetField.getAutoBind())
-                + String.format(CALL_RESOLVE_METHOD_CODE, sourceValueVarName, "fieldType", "resolveConfig");
+        StringBuilder body = new StringBuilder();
+        body.append(String.format(FIND_FIELD_CODE, TypeUtils.getCanonicalNameWithSuffix(targetClass), targetField.getFieldNmae()));
+        body.append(String.format(GET_FIELD_TYPE_CODE, "field", TypeUtils.getCanonicalNameWithSuffix(targetClass), "targetType"));
+        body.append("TypeValueResolver resolver = TypeValueResolvers.getResolver(fieldType);\n");
+        body.append("if (resolver != null) { \n");
+        body.append(this.generateCopyResolveConfigStub(targetField.getAutoBind()));
+        body.append(String.format(CALL_RESOLVE_METHOD_CODE, sourceValueVarName, "fieldType", "resolveConfig"));
+        return body.toString();
     }
 
+    /**
+     * @Title: generateCopyResolveConfigStub
+     * @Description: 拷贝resolve config
+     * @param: AutoBindField
+     * @return: String
+     */
     private String generateCopyResolveConfigStub(AutoBindField autoBind) {
         StringBuilder body = new StringBuilder();
         if (autoBind != null) {
@@ -931,16 +978,16 @@ public class ObjectGenerator {
         return body.toString();
     }
 
-    private String genreateFieldTypeAndVarAssignStub(FieldWrapper field) {
+    private String genreateFieldTypeAndVarAssignStub(FieldWrapper field, String valueStr) {
         StringBuilder body = new StringBuilder();
         if (field.getFieldType().isPrimitive()) {
             String fieldClassName = TypeUtils.getPrimitiveClassWrapName(field.getFieldType());
             String typeAndVarName = this.generateGetTypeAndVarStr(TypeUtils.getCanonicalName(field.getFieldType()), generateDefFieldValueVarStub(field));
-            body.append(String.format("%s = %s", typeAndVarName, String.format(CastUtils_GET_PRIM_CODE, fieldClassName, String.format("(%s) %s", fieldClassName, "childResult.instance()"))));
+            body.append(String.format("%s = %s", typeAndVarName, String.format(CastUtils_GET_PRIM_CODE, fieldClassName, String.format("(%s) %s", fieldClassName, valueStr))));
         } else {
             String fieldClassName = TypeUtils.getCanonicalName(field.getFieldType());
             String typeAndVarName = this.generateGetTypeAndVarStr(fieldClassName, generateDefFieldValueVarStub(field));
-            body.append(String.format("%s = %s;\n", typeAndVarName, String.format("(%s) %s", fieldClassName, "childResult.instance()")));
+            body.append(String.format("%s = %s;\n", typeAndVarName, String.format("(%s) %s", fieldClassName, valueStr)));
         }
         return body.toString();
     }
@@ -962,9 +1009,11 @@ public class ObjectGenerator {
     }
 
     private String generateVarInitStub() {
-        return "DefaultResult result = new DefaultResult(); \n"
-                + "EvaluationContext context = new StandardEvaluationContext(target); \n"
-                + "ExpressionParser parser = new SpelExpressionParser(); \n";
+        StringBuilder body = new StringBuilder();
+        body.append("DefaultResult result = new DefaultResult(); \n");
+        body.append("EvaluationContext context = new StandardEvaluationContext(target); \n");
+        body.append("ExpressionParser parser = new SpelExpressionParser(); \n");
+        return body.toString();
     }
 
     /**
@@ -974,7 +1023,7 @@ public class ObjectGenerator {
      * @param: 字段调用链
      * @return: EL表达式校验代码桩
      */
-    private String generateELValidateAndConvertStub(FieldWrapper targetField, FieldChainNode chainNode) {
+    private String generateELValidateAndConvertStub(FieldWrapper targetField, FieldWrapper.FieldChainNode chainNode) {
         if (targetField.getAutoBind() == null
                 || !ConvertFeature.isEnabled(targetField.getAutoBind().features(), ConvertFeature.EL_VALIDATE_ENABLE)) {
             return "";
@@ -1000,10 +1049,18 @@ public class ObjectGenerator {
         pool.importPackage("cn.com.hjack.autobind.JavaBeanValueResolver");
         pool.importPackage("cn.com.hjack.autobind.ArrayValueResolver");
         pool.importPackage("cn.com.hjack.autobind.generator.ObjectGenerator");
-        pool.importPackage("cn.com.hjack.autobind.factory.TypeWrappers");
-        pool.importPackage("cn.com.hjack.autobind.factory.TypeValueResolvers");
+        pool.importPackage("cn.com.hjack.autobind.binder.TypeWrappers");
+        pool.importPackage("cn.com.hjack.autobind.resolver.TypeValueResolvers");
         pool.importPackage("cn.com.hjack.autobind.Result");
-        pool.importPackage("cn.com.hjack.autobind.validation.DefaultResult");
+        pool.importPackage("cn.com.hjack.autobind.binder.DefaultResult");
+        pool.importPackage("cn.com.hjack.autobind.resolver.VariableValueResolver");
+        pool.importPackage("cn.com.hjack.autobind.binder.BeanMapper");
+        pool.importPackage("cn.com.hjack.autobind.binder.DefaultValidationErrors");
+        pool.importPackage("cn.com.hjack.autobind.utils.TypeUtils");
+        pool.importPackage("cn.com.hjack.autobind.utils.CastUtils");
+        pool.importPackage("cn.com.hjack.autobind.TypeWrapper");
+        pool.importPackage("cn.com.hjack.autobind.binder.TypeWrapperImpl");
+        pool.importPackage("cn.com.hjack.autobind.ResolveConfig");
         pool.importPackage("java.util.Map");
         pool.importPackage("java.util.Arrays");
         pool.importPackage("java.util.HashMap");
@@ -1014,25 +1071,14 @@ public class ObjectGenerator {
         pool.importPackage("java.util.Collection");
         pool.importPackage("java.util.Date");
         pool.importPackage("java.lang.reflect.Field");
-        pool.importPackage("cn.com.hjack.autobind.utils.TypeUtils");
-        pool.importPackage("cn.com.hjack.autobind.utils.CastUtils");
-        pool.importPackage("cn.com.hjack.autobind.factory.ConversionServiceProvider");
+        pool.importPackage("java.text.SimpleDateFormat");
+        pool.importPackage("java.math.BigDecimal");
         pool.importPackage("org.springframework.util.StringUtils");
-        pool.importPackage("org.springframework.core.convert.support.DefaultConversionService");
-        pool.importPackage("org.springframework.core.convert.ConversionService");
-        pool.importPackage("cn.com.hjack.autobind.TypeWrapper");
-        pool.importPackage("cn.com.hjack.autobind.type.TypeWrapperImpl");
-        pool.importPackage("cn.com.hjack.autobind.ResolveConfig");
         pool.importPackage("org.springframework.expression.EvaluationContext");
         pool.importPackage("org.springframework.expression.Expression");
         pool.importPackage("org.springframework.expression.ExpressionParser");
         pool.importPackage("org.springframework.expression.spel.standard.SpelExpressionParser");
         pool.importPackage("org.springframework.expression.spel.support.StandardEvaluationContext");
-        pool.importPackage("java.text.SimpleDateFormat");
-        pool.importPackage("java.math.BigDecimal");
-        pool.importPackage("cn.com.hjack.autobind.resolver.VariableValueResolver");
-        pool.importPackage("cn.com.hjack.autobind.mapper.BeanMapper");
-        pool.importPackage("cn.com.hjack.autobind.validation.DefaultValidationErrors");
     }
 
     public static class MapProxyEntry implements Map.Entry<String, Object> {
@@ -1064,8 +1110,4 @@ public class ObjectGenerator {
     }
 
 }
-
-
-
-
 

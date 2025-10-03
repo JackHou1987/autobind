@@ -4,21 +4,18 @@
 package cn.com.hjack.autobind.resolver;
 
 
-import cn.com.hjack.autobind.factory.TypeValueResolvers;
-import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.factory.ConversionServiceProvider;
 import cn.com.hjack.autobind.ResolveConfig;
 import cn.com.hjack.autobind.Result;
 import cn.com.hjack.autobind.TypeValueResolver;
 import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.validation.DefaultResult;
+import cn.com.hjack.autobind.factory.TypeValueResolvers;
 import cn.com.hjack.autobind.utils.CastUtils;
-import org.springframework.core.convert.ConversionService;
-
+import cn.com.hjack.autobind.utils.Constants;
+import cn.com.hjack.autobind.validation.DefaultResult;
 
 /**
  * @ClassName: VariableValueResolver
- * @Description: TODO
+ * @Description: 泛型解析器
  * @author houqq
  * @date: 2025年6月16日
  *
@@ -55,29 +52,7 @@ public class VariableValueResolver extends AbstractTypeValueResolver {
             }
             return result;
         } else {
-            ConversionService conversionService = ConversionServiceProvider.getConversionService(config);
-            Class<?> actualCls = targetType.resolve();
-            if (actualCls == null) {
-                Object value = convert(source, Object.class, conversionService);
-                if (value != null) {
-                    result.setInstance(CastUtils.castSafe(value));
-                    return result;
-                } else {
-                    result.setResultCode(Constants.FAIL_CODE);
-                    result.setResultMsg(Constants.FAIL_MESSAGE);
-                    return result;
-                }
-            } else {
-                Object value = convert(source, actualCls, conversionService);
-                if (value != null) {
-                    result.setInstance(CastUtils.castSafe(value));
-                    return result;
-                } else {
-                    result.setResultCode(Constants.FAIL_CODE);
-                    result.setResultMsg(Constants.FAIL_MESSAGE);
-                    return result;
-                }
-            }
+            return DefaultResult.errorResult(null, Constants.FAIL_CODE, "can not convert source to target, can not find converter");
         }
     }
 

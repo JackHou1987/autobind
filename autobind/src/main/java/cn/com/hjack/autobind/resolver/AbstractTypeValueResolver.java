@@ -3,17 +3,12 @@
  */
 package cn.com.hjack.autobind.resolver;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import cn.com.hjack.autobind.Converter;
+import cn.com.hjack.autobind.*;
 import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.ResolveConfig;
-import cn.com.hjack.autobind.Result;
-import cn.com.hjack.autobind.TypeValueResolver;
-import cn.com.hjack.autobind.TypeWrapper;
 import cn.com.hjack.autobind.validation.DefaultResult;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.util.StringUtils;
@@ -28,7 +23,7 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AbstractTypeValueResolver implements TypeValueResolver {
 
-    private Map<Class<?>, Map<Class<?>, InternalConverter<Object, ResolveConfig, Object>>> internalConverters = new HashMap<>();
+    private final Map<Class<?>, Map<Class<?>, InternalConverter<Object, ResolveConfig, Object>>> internalConverters = new HashMap<>();
 
     public AbstractTypeValueResolver() {
 
@@ -48,22 +43,48 @@ public abstract class AbstractTypeValueResolver implements TypeValueResolver {
             if (!StringUtils.isEmpty(config.defaultValue())) {
                 source = config.defaultValue();
             }
-            return doResolveValue(source, targetType, config);
+            ConvertInterceptor interceptor = config.interceptor();
+            if (interceptor != null) {
+                source = interceptor.beforeConvert(source, targetType, config.removeInterceptor());
+            }
+            Result<T> target = doResolveValue(source, targetType, config.removeInterceptor());
+            if (interceptor != null) {
+                return (Result<T>) DefaultResult.defaultSuccessResult(interceptor.postConvert(target.instance(), targetType, config.removeInterceptor()));
+            } else {
+                return target;
+            }
         } else {
             Converter<?, ?> converter = config.getCustomConverter();
             if (converter == null) {
-                return doResolveValue(source, targetType, config);
+                ConvertInterceptor interceptor = config.interceptor();
+                if (interceptor != null) {
+                    source = interceptor.beforeConvert(source, targetType, config.removeInterceptor());
+                }
+                Result<T> target = doResolveValue(source, targetType, config.removeInterceptor());
+                if (interceptor != null) {
+                    return (Result<T>) DefaultResult.defaultSuccessResult(interceptor.postConvert(target.instance(), targetType, config.removeInterceptor()));
+                } else {
+                    return target;
+                }
             } else {
                 T value = ((Converter<Object, T>) converter).convert(source);
                 if (value != null) {
                     return DefaultResult.defaultSuccessResult(value);
                 } else {
-                    return this.doResolveValue(source, targetType, config);
+                    ConvertInterceptor interceptor = config.interceptor();
+                    if (interceptor != null) {
+                        source = interceptor.beforeConvert(source, targetType, config.removeInterceptor());
+                    }
+                    Result<T> target = this.doResolveValue(source, targetType, config.removeInterceptor());
+                    if (interceptor != null) {
+                        return (Result<T>) DefaultResult.defaultSuccessResult(interceptor.postConvert(target.instance(), targetType, config.removeInterceptor()));
+                    } else {
+                        return target;
+                    }
                 }
             }
         }
     }
-
     protected abstract <T> Result<T> doResolveValue(Object source, TypeWrapper targetType, ResolveConfig config) throws Exception;
 
     @SuppressWarnings("unchecked")

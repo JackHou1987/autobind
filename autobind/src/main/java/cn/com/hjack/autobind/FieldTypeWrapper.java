@@ -3,7 +3,6 @@
  */
 package cn.com.hjack.autobind;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 
@@ -15,11 +14,9 @@ import java.lang.reflect.Type;
  */
 public interface FieldTypeWrapper extends TypeWrapper {
 
-    Field getField();
-
     /**
      * @Title: getFieldTypeClass
-     * @Description: 获取字段实际的class,如果为泛型则返回Object或者Object数组类型
+     * @Description: 获取field的实际类型
      * @return: Class<?>
      * @throws
      */
@@ -27,10 +24,8 @@ public interface FieldTypeWrapper extends TypeWrapper {
 
     /**
      * @Title: getFieldGenericType
-     * @Description: 获取当前type wrapper所属的field的generic type -> field.getGenericType(),该方法不同于getType(),
-     * <br> getType是经过解析后返回的类型
+     * @Description: 获取字段的generic type
      * @return: Type
-     * @throws
      */
     Type getFieldGenericType();
 

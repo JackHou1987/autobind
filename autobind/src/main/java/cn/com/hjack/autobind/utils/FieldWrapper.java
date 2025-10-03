@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package cn.com.hjack.autobind.utils;
 
 import java.lang.reflect.Field;
@@ -111,10 +114,23 @@ public class FieldWrapper {
         return this.field.getName();
     }
 
+    /**
+     * @ClassName: FieldChainNode
+     * @Description: 字段调用链节点，如java bean中，有field1字段，所属为java bean1，java bean1中有field2字段
+     * 则field1->field2调用链为field1.getField1().getField2()
+     * @author houqq
+     * @date: 2025年9月3日
+     */
     public static class FieldChainNode {
 
+        /**
+         * 调用链当前节点
+         */
         private FieldWrapper current;
 
+        /**
+         * 调用链下一节点
+         */
         private FieldChainNode next;
 
         public FieldChainNode getNext() {
@@ -138,6 +154,11 @@ public class FieldWrapper {
             this.next = next;
         }
 
+        /**
+         * @Title: getLeaf
+         * @Description: 调用链叶子节点
+         * @return: FieldWrapper
+         */
         public FieldWrapper getLeaf() {
             if (next != null) {
                 return next.getLeaf();
@@ -146,6 +167,12 @@ public class FieldWrapper {
             }
         }
 
+        /**
+         * @Title: getFieldInvokeDesc
+         * @Description: 得到字段调用链字符串
+         * @return: String
+         * @throws
+         */
         public String getFieldInvokeDesc() {
             StringBuilder body = new StringBuilder();
             if (current != null) {
@@ -155,7 +182,7 @@ public class FieldWrapper {
                     if (StringUtils.isEmpty(nextFieldStr)) {
                         return body.toString();
                     } else {
-                        body.append(".").append(nextFieldStr);
+                        body.append("." + nextFieldStr);
                         return body.toString();
                     }
                 } else {

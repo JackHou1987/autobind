@@ -21,25 +21,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cn.com.hjack.autobind.AutoBindField;
-import cn.com.hjack.autobind.MapConvertFeature;
-import cn.com.hjack.autobind.ValidationErrors;
-import cn.com.hjack.autobind.TypeReference;
-import cn.com.hjack.autobind.Validator;
-import cn.com.hjack.autobind.factory.TypeWrappers;
-import cn.com.hjack.autobind.utils.Constants;
+import cn.com.hjack.autobind.*;
 import cn.com.hjack.autobind.factory.ConversionServiceProvider;
-import cn.com.hjack.autobind.ConvertFeature;
-import cn.com.hjack.autobind.FieldTypeWrapper;
-import cn.com.hjack.autobind.ResolveConfig;
-import cn.com.hjack.autobind.Result;
-import cn.com.hjack.autobind.TypeValueResolver;
-import cn.com.hjack.autobind.TypeWrapper;
 import cn.com.hjack.autobind.factory.TypeValueResolvers;
-import cn.com.hjack.autobind.utils.CastUtils;
-import cn.com.hjack.autobind.utils.ClassWrapper;
-import cn.com.hjack.autobind.utils.FieldWrapper;
-import cn.com.hjack.autobind.utils.TypeUtils;
+import cn.com.hjack.autobind.factory.TypeWrappers;
+import cn.com.hjack.autobind.utils.*;
 import cn.com.hjack.autobind.validation.DefaultResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -62,7 +48,7 @@ import com.google.common.base.CaseFormat;
 
 /**
  * @ClassName: BeanMapper
- * @Description: TODO
+ * @Description: 主要执行将javabean转换为map或者将map转换为javabean或者对map做键值的转化和一些处理操作，主要实现基于spring的databinder
  * @author houqq
  * @date: 2025年6月13日
  *
@@ -71,7 +57,7 @@ public class BeanMapper<T> {
 
     private DataBinder dataBinder;
 
-    private List<cn.com.hjack.autobind.Validator> internalValidators = new ArrayList<>();
+    private List<Validator> internalValidators = new ArrayList<>();
 
     private T target;
 
@@ -153,6 +139,7 @@ public class BeanMapper<T> {
         this(typeReference, null);
     }
 
+
     public T getTarget() {
         return target;
     }
@@ -161,15 +148,14 @@ public class BeanMapper<T> {
         return config;
     }
 
-    public Result<T> bindToMap(Map<String, Object> map, cn.com.hjack.autobind.Validator validator) {
-        if (MapUtils.isEmpty(map)) {
-            return DefaultResult.defaultSuccessResult(target);
-        }
-        doBindMap(map, validator);
-        return validate();
-    }
-
-    public Result<T> bindMapToBean(Map<String, Object> map, cn.com.hjack.autobind.Validator validator) {
+    /**
+     * @Title: bindMapToBean
+     * @Description: 将map对象转换为java bean对象，map中key字段为java bean field 字段
+     * @param: map对象
+     * @param: 校验器
+     * @return: Result<T>
+     */
+    public Result<T> bindMapToBean(Map<String, Object> map, Validator validator) {
         if (MapUtils.isEmpty(map)) {
             return DefaultResult.defaultSuccessResult(target);
         }
@@ -177,7 +163,15 @@ public class BeanMapper<T> {
         return validate();
     }
 
-    public Result<T> bindBeanToBean(Object source, cn.com.hjack.autobind.Validator validator, MapConvertFeature... features) {
+    /**
+     * @Title: bindBeanToBean
+     * @Description: 将源java bean绑定到目标java bean,先将源java bean转为map后再转为目标java bean
+     * @param: 源javabean
+     * @param: 校验器
+     * @param: MapConvertFeature
+     * @return: Result<T>
+     */
+    public Result<T> bindBeanToBean(Object source, Validator validator, MapConvertFeature... features) {
         this.doBindBean(BeanMapper.beanToMap(source.getClass(), source, features), validator);
         return validate();
     }
@@ -192,15 +186,24 @@ public class BeanMapper<T> {
         if (field == null) {
             return;
         }
-        addValidator((t, errors) -> {
-            if (StringUtils.isEmpty(resultMsg)) {
-                errors.collectError(field.getName(), field.getName() + ".bind error");
-            } else {
-                errors.collectError(field.getName(), field.getName() + "." + resultMsg);
+        addValidator(new Validator() {
+            @Override
+            public void validate(Object t, ValidationErrors errors) {
+                if (StringUtils.isEmpty(resultMsg)) {
+                    errors.collectError(field.getName(), field.getName() + ".bind error");
+                } else {
+                    errors.collectError(field.getName(), field.getName() + "." + resultMsg);
+                }
             }
         });
     }
 
+    /**
+     * @Title: initVariableContext
+     * @Description: 初始化基于typereference的variable context
+     * @param: TypeReference
+     * @return: Map<String,TypeWrapper>
+     */
     private Map<String, TypeWrapper> initVariableContext(TypeReference<T> typeReference) {
         TypeWrapper typeWrapper = TypeWrappers.getType(TypeReference.class, typeReference.getClass());
         TypeWrapper[] parameterizedTypes = Optional.ofNullable(typeWrapper.getGeneric(0)).orElseThrow(() -> {return new IllegalStateException("type wrapper can not be null");}).getGenerics();
@@ -228,7 +231,13 @@ public class BeanMapper<T> {
         return ConversionServiceProvider.getConversionService(config);
     }
 
-    private void doBindBean(Map<String, Object> map, cn.com.hjack.autobind.Validator validator) {
+    /**
+     * @Title: doBindBean
+     * @Description: 将map转换为javabean
+     * @param: source map
+     * @param: 校验器
+     */
+    private void doBindBean(Map<String, Object> map, Validator validator) {
         if (target == null || !TypeUtils.isJavaBeanClass(target.getClass())
                 || MapUtils.isEmpty(map)) {
             return;
@@ -273,11 +282,11 @@ public class BeanMapper<T> {
      * @Title: getValue
      * @Description: 从map中获得field名称所对应的value,如果value为空，且autoBind.defaultValue()不为空，则返回默认值
      * @param: source map
-     * @param: AutoBindField
+     * @param: autoBind
      * @param: field
      * @return: value
      */
-    public static Object getValue(Map<String, Object> source, AutoBindField autoBind, Field field) {
+    private Object getValue(Map<String, Object> source, AutoBindField autoBind, Field field) {
         String fieldName = getFieldName(autoBind, field);
         if (StringUtils.isEmpty(fieldName)) {
             return null;
@@ -286,33 +295,48 @@ public class BeanMapper<T> {
         if (autoBind != null && !StringUtils.isEmpty(autoBind.defaultValue())) {
             defaultValue = autoBind.defaultValue();
         }
-        return getValue(source, fieldName, field.getType(), defaultValue);
+        return getValueOrDefault(source, fieldName, field.getType(), defaultValue);
     }
 
-    public static Object getValue(Map<String, Object> map, String receiveFieldName, Class<?> fieldClass, String defaultValue) {
+    /**
+     * @Title: getValue
+     * @Description: 依据receiveFieldName找到map中key对应的value,如果找不到，
+     * 则递归查找map value中为map的对象。返回如果当前field class为java bean，则返回当前map,否则返回default value
+     * @param: 待查找的map
+     * @param: 待查找的key名称
+     * @param: 字段class
+     * @param: 默认值
+     * @return: keyName对应的value
+     */
+    public static Object getValueOrDefault(Map<String, Object> map, String keyName, Class<?> fieldClass, String defaultValue) {
         if (map == null || map.isEmpty()) {
             return null;
         }
-        Object fieldValue = doGetValue(map, receiveFieldName, fieldClass);
+        Object fieldValue = doGetValue(map, keyName);
         if (fieldValue != null) {
             return fieldValue;
         } else {
-            return defaultValue;
+            // 如果待查找的字段类型为java bean,且map中找不到相应的key,则返回当前map
+            if (TypeUtils.isJavaBeanClass(fieldClass)) {
+                return map;
+            } else {
+                return defaultValue;
+            }
         }
     }
 
     /**
      * @Title: doGetValue
-     * @Description: 从source map中找到到key为fieldName的value
+     * @Description: 从source map中找到keyName对应的value
      * @param: source map
-     * @param: field name
+     * @param: key name
      * @param: field class
-     * @return: map value
+     * @return: key value
      */
     @SuppressWarnings("unchecked")
-    private static Object doGetValue(Map<String, Object> source, String fieldName, Class<?> fieldClass) {
-        if (source.get(fieldName) != null) {
-            return source.get(fieldName);
+    private static Object doGetValue(Map<String, Object> source, String keyName) {
+        if (source.get(keyName) != null) {
+            return source.get(keyName);
         }
 
         Set<Map.Entry<String, Object>> entries = source.entrySet();
@@ -320,21 +344,22 @@ public class BeanMapper<T> {
         for (Map.Entry<String, Object> entry : entries) {
             Object value = entry.getValue();
             if (value instanceof Map) {
-                Object fieldValue = doGetValue((Map<String, Object>) value, fieldName, fieldClass);
+                Object fieldValue = doGetValue((Map<String, Object>) value, keyName);
                 if (fieldValue != null) {
                     return fieldValue;
                 }
             }
         }
-
-        // 如果待查找的字段类型为java bean,且map中找不到相应的key,则返回当前map
-        if (TypeUtils.isJavaBeanClass(fieldClass)) {
-            return source;
-        } else {
-            return null;
-        }
+        return null;
     }
 
+    /**
+     * @Title: getFieldName
+     * @Description: 获得字段名称，如果AutoBindField注解不为空，则返回AutoBindField的recvFieldName值，否则返回字段名称
+     * @param: autoBind
+     * @param: field
+     * @return: String
+     */
     private static String getFieldName(AutoBindField autoBind, Field field) {
         if (autoBind == null && field == null) {
             return null;
@@ -347,10 +372,14 @@ public class BeanMapper<T> {
                 return field.getName();
             }
         }
-
     }
 
-
+    /**
+     * @ClassName: CustomFieldEditor
+     * @Description: 基于spring的字段编辑器
+     * @author houqq
+     * @date: 2025年9月3日
+     */
     private static class CustomFieldEditor<T> extends PropertyEditorSupport {
 
         private Object target;
@@ -389,14 +418,15 @@ public class BeanMapper<T> {
                         if (result == null || !result.success()
                                 || result.instance() == null) {
                             if (result != null) {
-                                setValue(result.instance());
+                                target = result.instance();
+                                setValue(target = result.instance());
                                 beanMapper.reportFieldConvertError(result.resultMsg(), field);
                             } else {
                                 setValue(null);
                                 beanMapper.reportFieldConvertError("error", field);
                             }
                         } else {
-                            setValue(result.instance());
+                            setValue(target = result.instance());
                         }
                         target = getValue();
                     } catch (Exception e) {
@@ -437,26 +467,11 @@ public class BeanMapper<T> {
                 }
             }
         }
-
-    }
-
-    private void doBindMap(Map<String, Object> map, cn.com.hjack.autobind.Validator validator) {
-        if (target == null || !TypeUtils.isMapClass(target.getClass())) {
-            return;
-        }
-        MutablePropertyValues propertyValues = new MutablePropertyValues();
-        if (MapUtils.isEmpty(map)) {
-            propertyValues.addPropertyValues(new HashMap<>());
-        } else {
-            map.forEach(propertyValues::add);
-        }
-        addGlobalValidator(validator);
-        bind(propertyValues);
     }
 
     /**
      * @Title: validate
-     * @Description: 执行实际的validator校验
+     * @Description: 执行实际的字段校验，该逻辑会将每个字段的condition校验器和global校验器一一做校验处理
      */
     private Result<T> validate() {
         List<String> errrMsgs = new ArrayList<>();
@@ -482,7 +497,7 @@ public class BeanMapper<T> {
                             }
                         }
                     };
-                    List<cn.com.hjack.autobind.Validator> validators = getValidators();
+                    List<Validator> validators = getValidators();
                     if (!CollectionUtils.isEmpty(validators)) {
                         validators.stream().filter(Objects::nonNull).forEach(validator -> {
                             validator.validate(getTarget(), validationErrors);
@@ -516,7 +531,8 @@ public class BeanMapper<T> {
         }
     }
 
-    private List<cn.com.hjack.autobind.Validator> getValidators() {
+
+    private List<Validator> getValidators() {
         return internalValidators;
     }
 
@@ -536,7 +552,7 @@ public class BeanMapper<T> {
 
     /**
      * @Title: bind
-     * @Description: 属性绑定
+     * @Description: 绑定属性
      * @param: MutablePropertyValues
      */
     private void bind(MutablePropertyValues propertyValues) {
@@ -549,19 +565,18 @@ public class BeanMapper<T> {
      * @return: List<ObjectError>
      */
     private List<ObjectError> getAllErrors() {
-        if (dataBinder == null) {
+        if (dataBinder == null || dataBinder.getBindingResult() == null) {
             return Collections.emptyList();
         } else {
-            dataBinder.getBindingResult();
             return dataBinder.getBindingResult().getAllErrors();
         }
     }
 
 
     /**
-     * @Description: 添加全局校验器
+     * @Description: 添加全局校验器(用户针对整个java bean做的校验逻辑)
      */
-    private void addGlobalValidator(cn.com.hjack.autobind.Validator validator) {
+    private void addGlobalValidator(Validator validator) {
         if (validator != null) {
             addValidator(validator);
         }
@@ -601,11 +616,9 @@ public class BeanMapper<T> {
     /**
      * @Title: addInternalValidator
      * @Description: 新增内部校验器
-     * @param: @param validator
-     * @return: void
-     * @throws
+     * @param: validator
      */
-    private void addValidator(cn.com.hjack.autobind.Validator validator) {
+    private void addValidator(Validator validator) {
         if (validator != null) {
             internalValidators.add(validator);
         }
@@ -680,10 +693,11 @@ public class BeanMapper<T> {
             }
             return result;
         } else {
-            Map<String, Object> target = convertBeanToMap4Map(source, new HashMap<>(), features);
-            if (MapConvertFeature.isEnabled(MapConvertFeature.of(features), MapConvertFeature.KEY_EXPAND)) {
+            Map<String, Object> target = convertBeanToMap4Map((Map<String, Object>) source, new HashMap<>(), features);
+            MapConvertFeature[] featureArray = features;
+            if (MapConvertFeature.isEnabled(MapConvertFeature.of(featureArray), MapConvertFeature.KEY_EXPAND)) {
                 if (!MapUtils.isEmpty(target)) {
-                    result.putAll(target);
+                    target.forEach(result::put);
                 }
             } else {
                 if (!StringUtils.isEmpty(keyName)) {
@@ -709,9 +723,10 @@ public class BeanMapper<T> {
             return new HashMap<>();
         } else {
             Map<String, Object> map = new HashMap<>();
-            int features = MapConvertFeature.of(feature);
+            MapConvertFeature[] featureArray = feature;
+            int features = MapConvertFeature.of(featureArray);
             source.forEach((key, value) -> {
-                map.put(convertMapKeyStyle(key, features), convertMapValueType(value, javaBeanFieldObject, feature));
+                map.put(convertMapKeyStyle(key, features), convertMapValueType(value, javaBeanFieldObject, featureArray));
             });
             return map;
         }
@@ -742,6 +757,7 @@ public class BeanMapper<T> {
      * @param: 源数组对象
      * @param: 转换map时，键值转换逻辑
      * @return: 转换后的数组
+     * @throws
      */
     private static Object convertBeanToMap4Array(Object source, Map<Field, Object> javaBeanFieldObject, MapConvertFeature... features) {
         if (source != null && Array.getLength(source) != 0) {
@@ -778,7 +794,7 @@ public class BeanMapper<T> {
                     result.put(keyName, target);
                 } else {
                     if (!MapUtils.isEmpty(target)) {
-                        result.putAll(target);
+                        target.forEach(result::put);
                     }
                 }
             } catch (Exception e) {
@@ -792,7 +808,7 @@ public class BeanMapper<T> {
                 result.put(keyName, target);
             } else {
                 if (!MapUtils.isEmpty(target)) {
-                    result.putAll(target);
+                    target.forEach(result::put);
                 }
             }
             return result;
@@ -801,13 +817,12 @@ public class BeanMapper<T> {
 
     /**
      * @Title: convertBean
-     * @Description: 递归将java bean及其中字段值包含java bean的转换为map。如collection中元素如果为java bean则转换为map。用于后续字段转换
+     * @Description: 递归将java bean及其中字段值包含java bean的转换为map。
      * @param: bean instance
      * @param: 存储javabean字段和定义对其声明的javaBean实体对象，判断循环引用
      * @param: map对象中的key value转换风格
      * @return: 转换后的map对象
      */
-    @SuppressWarnings({ "unchecked", "deprecation" })
     private static Map<String, Object> convertBeanToMap4JavaBean(Object target, Map<Field, Object> javaBeanFieldObject, MapConvertFeature... features) {
         if (target == null || !TypeUtils.isJavaBeanClass(target.getClass())) {
             return new HashMap<>();
@@ -853,34 +868,25 @@ public class BeanMapper<T> {
                     } else {
                         beanMap = convertBeanToMap4JavaBean(value, javaBeanFieldObject, features);
                     }
-                    // 非展开
-                    if (autoBind == null || !autoBind.fieldExpand()) {
-                        String[] fieldNames = getOutParamFieldName(autoBind, field);
-                        if (fieldNames != null && fieldNames.length != 0) {
-                            for (String fieldName : fieldNames) {
-                                result.put(fieldName, beanMap);
-                            }
-                        } else {
-                            throw new IllegalStateException("unkown field name");
+                    String[] fieldNames = getOutParamFieldName(autoBind, field);
+                    if (fieldNames != null && fieldNames.length != 0) {
+                        for (String fieldName : fieldNames) {
+                            result.put(fieldName, beanMap);
                         }
                     } else {
-                        result.putAll(beanMap);
+                        throw new IllegalStateException("unkown field name");
                     }
                 } catch (Exception e) {
                     result.putAll(new HashMap<>());
                 }
             } else if (TypeUtils.isMapClass(valueClass)) {
-                if (autoBind == null || !autoBind.fieldExpand()) {
-                    String[] fieldNames = getOutParamFieldName(autoBind, field);
-                    if (fieldNames != null && fieldNames.length != 0) {
-                        for (String fieldName : fieldNames) {
-                            result.put(fieldName, (Map<String, Object>) value);
-                        }
-                    } else {
-                        throw new IllegalStateException("unkown field name");
+                String[] fieldNames = getOutParamFieldName(autoBind, field);
+                if (fieldNames != null && fieldNames.length != 0) {
+                    for (String fieldName : fieldNames) {
+                        result.put(fieldName, value);
                     }
                 } else {
-                    result.putAll((Map<String, Object>) value);
+                    throw new IllegalStateException("unkown field name");
                 }
             } else if (TypeUtils.isArrayClass(valueClass)) {
                 String[] fieldNames = getOutParamFieldName(autoBind, field);
@@ -897,12 +903,9 @@ public class BeanMapper<T> {
                         value = CastUtils.formatDate(value, autoBind);
                     }
                 } else {
+                    // 转换数字和日期格式
                     value = CastUtils.setNumberScale(value, autoBind);
                     value = CastUtils.formatDate(value, autoBind);
-                    // 转换为String类型
-                    if (autoBind != null && (autoBind.typeConvert() || autoBind.convertToStr())) {
-                        value = convert(value, String.class);
-                    }
                 }
                 String[] fieldNames = getOutParamFieldName(autoBind, field);
                 if (fieldNames != null) {
@@ -976,25 +979,24 @@ public class BeanMapper<T> {
      * @Description: 转换字符串大小写风格
      * @param: @param str
      * @param: @param targetFormat
-     * @param: @return
-     * @throws
      */
     private static String convertStrStyle(String str, CaseFormat targetFormat) {
         if (StringUtils.isEmpty(str)) {
             return null;
         } else {
+            String originStr = str;
             CaseFormat sourceFormat;
-            if (str.matches("[A-Z0-9]+")) {
+            if (originStr.matches("[A-Z0-9]+")) {
                 sourceFormat = CaseFormat.UPPER_UNDERSCORE;
-            } else if (str.matches("[a-z0-9]+")) {
+            } else if (originStr.matches("[a-z0-9]+")) {
                 sourceFormat = CaseFormat.LOWER_UNDERSCORE;
             } else {
-                sourceFormat = resolveStrStyle(str);
+                sourceFormat = resolveStrStyle(originStr);
             }
             if (sourceFormat == null) {
-                return str;
+                return originStr;
             } else {
-                return sourceFormat.to(targetFormat, str);
+                return sourceFormat.to(targetFormat, originStr);
             }
         }
     }
@@ -1021,9 +1023,8 @@ public class BeanMapper<T> {
      * @Title: convertMapValueType
      * @Description: 将map中value转换为两种类型(字符串或其他类型)
      * @param: map value
-     * @param: features
+     * @param: features MapConvertFeature
      * @return: 转换后的map value
-     * @throws
      */
     private static Object convertMapValueType(Object value, Map<Field, Object> javaBeanFieldObject, MapConvertFeature[] features) {
         if (value == null) {
@@ -1064,7 +1065,6 @@ public class BeanMapper<T> {
      * @Description: 类型推断,尝试基于一些简单规则推断字符串原始类型
      * @param: 原始字符串
      * @return: 实际类型class
-     * @throws
      */
     private static Class<?> typeInference(String str) {
         if (StringUtils.isEmpty(str)) {
@@ -1083,7 +1083,7 @@ public class BeanMapper<T> {
             }
         } else if ("true".equalsIgnoreCase(str) || "false".equalsIgnoreCase(str)) {
             return Boolean.class;
-        } else if (str.contains(",")) {
+        } else if (str.indexOf(",") != -1) {
             return List.class;
         } else if (CastUtils.parseDateTime(str) != null) {
             return Date.class;
@@ -1098,14 +1098,6 @@ public class BeanMapper<T> {
         } catch (Exception e) {
             return value;
         }
-    }
-
-    public static <T> Result<T> defaultSuccessResult(T instance) {
-        return DefaultResult.defaultSuccessResult(instance);
-    }
-
-    public static <T> Result<T> errorResult(T instance, String resultCode, String resultMsg) {
-        return DefaultResult.errorResult(instance, resultCode, resultMsg);
     }
 
 }

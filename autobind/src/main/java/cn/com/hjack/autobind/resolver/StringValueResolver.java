@@ -26,14 +26,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import cn.com.hjack.autobind.utils.Constants;
 import cn.com.hjack.autobind.ConvertFeature;
 import cn.com.hjack.autobind.ResolveConfig;
 import cn.com.hjack.autobind.Result;
 import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.validation.DefaultResult;
 import cn.com.hjack.autobind.utils.CastUtils;
+import cn.com.hjack.autobind.utils.Constants;
 import cn.com.hjack.autobind.utils.TypeUtils;
+import cn.com.hjack.autobind.validation.DefaultResult;
 import org.springframework.util.StringUtils;
 
 
@@ -155,7 +155,6 @@ public class StringValueResolver extends AbstractTypeValueResolver {
             return TypeUtils.getCanonicalName(value);
         });
     }
-
     @Override
     protected Result<Object> doResolveValue(Object source, TypeWrapper targetType, ResolveConfig config)
             throws Exception {
@@ -193,7 +192,6 @@ public class StringValueResolver extends AbstractTypeValueResolver {
         }
         return result;
     }
-
     private String resolveToStr(Object source, ResolveConfig config) throws Exception {
         if (source instanceof Collection) {
             Collection<?> object = (Collection<?>) source;
@@ -217,6 +215,24 @@ public class StringValueResolver extends AbstractTypeValueResolver {
             } else {
                 return String.valueOf(source);
             }
+        } else if (source instanceof Number) {
+            InternalConverter<Number, ResolveConfig, String> function = super.getInternalConverter(Number.class, String.class);
+            if (function == null) {
+                throw new IllegalStateException("can not convert source to number");
+            }
+            return function.convert((Number) source, config);
+        } else if (source instanceof Throwable) {
+            InternalConverter<Throwable, ResolveConfig, String> function = super.getInternalConverter(Throwable.class, String.class);
+            if (function == null) {
+                throw new IllegalStateException("can not convert source to throwable");
+            }
+            return function.convert((Throwable) source, config);
+        } else if (source.getClass().isEnum()) {
+            InternalConverter<Enum, ResolveConfig, String> function = super.getInternalConverter(Enum.class, String.class);
+            if (function == null) {
+                throw new IllegalStateException("can not convert source to enum");
+            }
+            return function.convert((Enum) source, config);
         } else {
             return String.valueOf(source);
         }

@@ -3,8 +3,6 @@
  */
 package cn.com.hjack.autobind.resolver;
 
-import cn.com.hjack.autobind.resolver.AbstractGenericTypeValueResolver;
-
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Optional;

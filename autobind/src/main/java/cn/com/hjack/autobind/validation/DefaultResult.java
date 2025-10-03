@@ -4,16 +4,13 @@
 package cn.com.hjack.autobind.validation;
 
 import cn.com.hjack.autobind.Result;
-
 import cn.com.hjack.autobind.utils.Constants;
 
-
 /**
- * @ClassName: InternalBindingResult
- * @Description: TODO
+ * @ClassName: DefaultResult
+ * @Description: 缺省Result
  * @author houqq
  * @date: 2025年7月9日
- *
  */
 public class DefaultResult<T> implements Result<T> {
 
@@ -47,12 +44,20 @@ public class DefaultResult<T> implements Result<T> {
         return new DefaultResult<>(instance, false, resultCode, resultMsg);
     }
 
+    public static <T> Result<T> errorResult(String resultCode, String resultMsg) {
+        return new DefaultResult<>(null, false, resultCode, resultMsg);
+    }
+
     public static <T> Result<T> errorResult(T instance) {
         return new DefaultResult<>(instance, false, Constants.FAIL_CODE, Constants.FAIL_MESSAGE);
     }
 
     public static <T> Result<T> defaultSuccessResult(T instance) {
         return new DefaultResult<>(instance, true, Constants.SUCCESS_CODE, Constants.SUCCESS_MESSAGE);
+    }
+
+    public static <T> Result<T> defaultSuccessResult() {
+        return new DefaultResult<>(null, true, Constants.SUCCESS_CODE, Constants.SUCCESS_MESSAGE);
     }
 
     @Override

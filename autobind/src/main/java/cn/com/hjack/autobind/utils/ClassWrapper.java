@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package cn.com.hjack.autobind.utils;
 
 import java.lang.reflect.Field;
@@ -8,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import cn.com.hjack.autobind.utils.FieldWrapper.FieldChainNode;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -26,6 +28,9 @@ import org.springframework.util.StringUtils;
  */
 public class ClassWrapper {
 
+    /**
+     * key->field name value->field wrapper
+     */
     private Map<String, FieldWrapper> fieldNameMap = new HashMap<>();
 
     private Map<String, ClassWrapper> javaBeanFieldNameClassMap = new HashMap<>();
@@ -57,7 +62,6 @@ public class ClassWrapper {
     public Map<String, FieldWrapper> getFieldNameMap() {
         return fieldNameMap;
     }
-
     public Map<String, FieldWrapper> getSendFieldNameMap() {
         if (MapUtils.isEmpty(fieldNameMap)) {
             return new HashMap<>();
@@ -121,15 +125,15 @@ public class ClassWrapper {
         }
     }
 
-    public FieldChainNode findFieldChainByFieldName(String fieldName, Map<Class<?>, Class<?>> javaBeanFieldClass) {
+    public FieldWrapper.FieldChainNode findFieldChainByFieldName(String fieldName, Map<Class<?>, Class<?>> javaBeanFieldClass) {
         if (StringUtils.isEmpty(fieldName)) {
-            return new FieldChainNode();
+            return new FieldWrapper.FieldChainNode();
         } else {
-            FieldChainNode fieldSlot = new FieldChainNode();
+            FieldWrapper.FieldChainNode fieldSlot = new FieldWrapper.FieldChainNode();
             FieldWrapper fieldWrapper = fieldNameMap.get(fieldName);
             if (fieldWrapper == null) {
                 if (javaBeanFieldNameClassMap == null || javaBeanFieldNameClassMap.isEmpty()) {
-                    return new FieldChainNode();
+                    return new FieldWrapper.FieldChainNode();
                 } else {
                     Set<Map.Entry<String, ClassWrapper>> entries = javaBeanFieldNameClassMap.entrySet();
                     for (Map.Entry<String, ClassWrapper> entry : entries) {
@@ -141,7 +145,7 @@ public class ClassWrapper {
                         } else {
                             javaBeanFieldClass.put(entry.getValue().getBeanCls(), this.getBeanCls());
                         }
-                        FieldChainNode next = entry.getValue().findFieldChainByFieldName(fieldName, javaBeanFieldClass);
+                        FieldWrapper.FieldChainNode next = entry.getValue().findFieldChainByFieldName(fieldName, javaBeanFieldClass);
                         if (next != null) {
                             FieldWrapper current = this.fieldNameMap.get(entry.getKey());
                             if (current == null) {

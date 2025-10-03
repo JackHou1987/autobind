@@ -9,6 +9,7 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import cn.com.hjack.autobind.FieldTypeWrapper;
 import cn.com.hjack.autobind.TypeWrapper;
@@ -24,21 +25,21 @@ import org.springframework.core.ResolvableType;
  */
 public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTypeWrapper {
 
-    private ResolvableType fieldResolvableType;
+    private final ResolvableType fieldResolvableType;
 
-    private Field field;
+    private final Field field;
 
-    private Class<?> implClass;
+    private final Class<?> implClass;
 
     /**
-     * 只有当字段为泛型时，该字段可能不为空
+     * 该fieldtype为泛型时,该actualType可能不为空
      */
     private TypeWrapper actualType;
 
     public FieldTypeWrapperImpl(Field field, Class<?> implClass, Map<String, TypeWrapper> variableContext) {
         super(variableContext);
         if (field == null || implClass == null) {
-            throw new IllegalArgumentException("field or impl class can not be null");
+            throw new IllegalArgumentException("field or impl class or variable context can not be null");
         }
         this.field = field;
         this.implClass = implClass;
@@ -93,12 +94,6 @@ public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTy
             return fieldResolvableType.getType();
         }
     }
-
-    @Override
-    public Field getField() {
-        return field;
-    }
-
     @Override
     public TypeWrapper getGeneric(int index) {
         if (index < 0) {
@@ -117,9 +112,13 @@ public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTy
     @Override
     public TypeWrapper[] getGenerics() {
         if (actualType != null) {
-            return Arrays.stream(actualType.getGenerics()).map(value -> new FieldTypeWrapperImpl(field, implClass, value)).toArray(FieldTypeWrapperImpl[]::new);
+            return Arrays.stream(actualType.getGenerics()).map(value -> {
+                return new FieldTypeWrapperImpl(field, implClass, value);
+            }).collect(Collectors.toList()).toArray(new FieldTypeWrapperImpl[0]);
         } else {
-            return Arrays.stream(fieldResolvableType.getGenerics()).map(value -> new FieldTypeWrapperImpl(field, implClass, value)).toArray(FieldTypeWrapperImpl[]::new);
+            return Arrays.stream(fieldResolvableType.getGenerics()).map(value -> {
+                return new FieldTypeWrapperImpl(field, implClass, value);
+            }).collect(Collectors.toList()).toArray(new FieldTypeWrapperImpl[0]);
         }
     }
 
@@ -172,4 +171,3 @@ public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTy
     }
 
 }
-

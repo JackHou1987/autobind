@@ -3,23 +3,17 @@
  */
 package cn.com.hjack.autobind.resolver;
 
-import java.util.Map;
-
+import cn.com.hjack.autobind.*;
 import cn.com.hjack.autobind.factory.TypeValueResolvers;
-import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.factory.ConversionServiceProvider;
-import cn.com.hjack.autobind.ConvertFeature;
-import cn.com.hjack.autobind.ResolveConfig;
-import cn.com.hjack.autobind.Result;
-import cn.com.hjack.autobind.TypeValueResolver;
-import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.mapper.BeanMapper;
-import cn.com.hjack.autobind.validation.DefaultResult;
 import cn.com.hjack.autobind.factory.TypeWrappers;
 import cn.com.hjack.autobind.generator.ObjectGenerator;
+import cn.com.hjack.autobind.mapper.BeanMapper;
 import cn.com.hjack.autobind.utils.CastUtils;
+import cn.com.hjack.autobind.utils.Constants;
 import cn.com.hjack.autobind.utils.TypeUtils;
-import org.springframework.core.convert.ConversionService;
+import cn.com.hjack.autobind.validation.DefaultResult;
+
+import java.util.Map;
 
 
 /**
@@ -85,15 +79,7 @@ public class MapValueResolver extends AbstractTypeValueResolver {
             result.setInstance(CastUtils.castSafe(resultMap));
             return result;
         } else {
-            ConversionService conversionService = ConversionServiceProvider.getConversionService(config);
-            Map<Object, Object> resultMap = TypeUtils.createMap(targetType.resolve());
-            for (Map.Entry<?, Object> entry : source.entrySet()) {
-                Object keyValue = super.convert(entry.getKey(), keyClass, conversionService);
-                Object value = super.convert(entry.getValue(), valueClass, conversionService);
-                resultMap.put(keyValue, value);
-            }
-            result.setInstance(CastUtils.castSafe(resultMap));
-            return result;
+            return DefaultResult.errorResult(null, Constants.FAIL_CODE, "can not convert source to target, can not find converter");
         }
     }
 

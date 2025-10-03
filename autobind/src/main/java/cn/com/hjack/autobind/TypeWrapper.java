@@ -10,34 +10,41 @@ import java.util.Map;
 /**
  * @ClassName: TypeWrapper
  * @Description: 类型type实例的封装,每个typewrapper均有一个variable context结构，
- * <br> 保存了其字段本身或者参数化类型的type名称及实际的typewrapper对象映射，用于泛型解析
+ * <br> 保存了参数化类型的type名称和实际类型的映射，用于上下文泛型解析
  * @author houqq
  * @date: 2025年6月23日
  *
  */
 public interface TypeWrapper {
 
+    /**
+     * @Title: getGeneric
+     * @Description: 获取当前类型的参数化类型
+     * @param: 参数化类型索引
+     * @return: 参数化类型
+     */
     TypeWrapper getGeneric(int index);
 
+    /**
+     * @Title: getGenerics
+     * @Description: 获取当前类型的参数化类型
+     * @return: 参数化类型
+     */
     TypeWrapper[] getGenerics();
 
     /**
      * @Title: getComponentType
-     * @Description: 获得该类型的component type
-     * @return: TypeWrapper
-     * @throws
+     * @Description: 获得该类型的组件类型
+     * @return: 组件类型
      */
     TypeWrapper getComponentType();
 
     /**
      * @Title: getType
-     * @Description: 获取typewrapper的generic type
-     * @param: @return
+     * @Description: 获取当前类型的Type
      * @return: Type
-     * @throws
      */
     Type getType();
-
 
     /**
      * @Title: none
@@ -50,7 +57,7 @@ public interface TypeWrapper {
 
     /**
      * @Title: resolve
-     * @Description: 获取解析后的实际类型
+     * @Description: 获取当前类型解析后的实际类型
      * @return: Class<?>
      */
     Class<?> resolve();
@@ -61,6 +68,12 @@ public interface TypeWrapper {
 
     Class<?> resolveOrDefault(Class<?> defaultClass);
 
+    /**
+     * @Title: resolveVariableContext
+     * @Description: 返回当前类型参数化类型名称、实际类型映射。
+     *   当前参数化类型若为泛型则尝试从父类型的variableContext中找到匹配类型,如果匹配不到则返回Object
+     * @return: Map<String,TypeWrapper>
+     */
     Map<String, TypeWrapper> resolveVariableContext();
 
     /**
@@ -76,7 +89,6 @@ public interface TypeWrapper {
      * @Description: 解析数组的组件类型
      * @param: 组件的原始类型
      * @return: 解析后的目标类型
-     * @throws
      */
     TypeWrapper resolveComponentType(TypeWrapper originComponentType);
 

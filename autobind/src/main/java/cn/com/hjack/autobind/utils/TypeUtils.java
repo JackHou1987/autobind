@@ -16,10 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
-import cn.com.hjack.autobind.AutoBindField;
-import org.apache.commons.lang3.ClassUtils;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ReflectionUtils;
@@ -35,8 +32,14 @@ import org.springframework.util.StringUtils;
  */
 public class TypeUtils {
 
-    private static Map<Class<?>, Boolean> javaBeanClassMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Boolean> javaBeanClassMap = new ConcurrentHashMap<>();
 
+    /**
+     * @Title: getComponentNonArrayType
+     * @Description: 获得数组组件类型，当为多维数组时，返回最终非数组组件类型
+     * @param: array type
+     * @return: component type
+     */
     public static Type getComponentNonArrayType(Type type) {
         if (type == null) {
             return null;
@@ -61,13 +64,13 @@ public class TypeUtils {
         if (baseType == null) {
             return null;
         }
-        if (!(baseType instanceof Class) && (baseType instanceof ParameterizedType)) {
+        if ((baseType instanceof ParameterizedType)) {
             return null;
         }
         if (implType == null) {
             return baseType;
         }
-        if (!(implType instanceof Class) && (implType instanceof ParameterizedType)) {
+        if ((implType instanceof ParameterizedType)) {
             return null;
         }
         Class<?> baseClass;
@@ -137,17 +140,13 @@ public class TypeUtils {
         return baseType;
     }
 
-    public static Object getOrDefaultValue(Object value, AutoBindField autoBind) {
-        if (autoBind == null) {
-            return value;
-        }
-        if (value == null && !StringUtils.isEmpty(autoBind.defaultValue())) {
-            return autoBind.defaultValue();
-        } else {
-            return value;
-        }
-    }
-
+    /**
+     * @Title: getOrDefaultValue
+     * @Description: 获得当前值或默认值
+     * @param: value 当前值
+     * @param: autoBind 默认值
+     * @return: Object
+     */
     public static Object getOrDefaultValue(Object value, String defaultValue) {
         if (StringUtils.isEmpty(defaultValue)) {
             return value;
@@ -159,6 +158,12 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * @Title: arrayOrCollectionToList
+     * @Description: 数组或集合转列表
+     * @param: object
+     * @return: 转换后的列表
+     */
     public static List<Object> arrayOrCollectionToList(Object object) {
         if (object == null) {
             return new ArrayList<>();
@@ -173,7 +178,8 @@ public class TypeUtils {
         }
     }
 
-    public static List<Object> arrayToList(Object array) {
+
+    private static List<Object> arrayToList(Object array) {
         if (array == null || !isArrayClass(array.getClass())) {
             return new ArrayList<>();
         } else {
@@ -190,11 +196,10 @@ public class TypeUtils {
         }
     }
 
-
     /**
      * @Title: isJavaBeanClass
      * @Description: 判断目标Class是否属于一个java bean,只有当目标类中包含非静态字段，
-     * 且有对应的getter和setter方法时，目标class是java bean class
+     * 且有对应的getter和setter方法
      * @param: 目标class
      * @return: boolean
      */
@@ -228,34 +233,22 @@ public class TypeUtils {
 
         }
     }
-
     /**
      * @Title: isMapClass
      * @Description: 判断是否是map类型
-     * @param: @param cls
-     * @param: @return
+     * @param: cls
      * @return: boolean
-     * @throws
      */
     public static boolean isMapClass(Class<?> cls) {
         return cls != null && Map.class.isAssignableFrom(cls);
     }
 
-    public static boolean isAssignable(Class<?> cls, Class<?> to) {
-        if (cls == null) {
-            return false;
-        } else {
-            return ClassUtils.isAssignable(cls, to);
-        }
-    }
 
     /**
      * @Title: isCollectionClass
      * @Description: 判断是否是集合类型
-     * @param: @param cls
-     * @param: @return
+     * @param: cls
      * @return: boolean
-     * @throws
      */
     public static boolean isCollectionClass(Class<?> cls) {
         return cls != null && Collection.class.isAssignableFrom(cls);
@@ -265,8 +258,16 @@ public class TypeUtils {
         return cls != null && cls.isArray();
     }
 
-    public static boolean isAtomicReferenceClass(Class<?> cls) {
-        return cls != null && AtomicReference.class.isAssignableFrom(cls);
+    public static boolean isPrimitiveArrayClass(Class<?> cls) {
+        return cls != null && cls.isArray() && TypeUtils.getArrayComponentNonArrayType(cls).isPrimitive();
+    }
+
+    public static boolean isNonPrimitiveArrayClass(Class<?> cls) {
+        return cls != null && cls.isArray() && !TypeUtils.getArrayComponentNonArrayType(cls).isPrimitive();
+    }
+
+    public static boolean isEnumClass(Class<?> cls) {
+        return cls != null && cls.isEnum();
     }
 
     public static Collection<Object> createCollection(Class<?> collectionType) {
@@ -279,7 +280,7 @@ public class TypeUtils {
 
     /**
      * @Title: createArrayBySource
-     * @Description: 依据源数组类型创建新数组,如果源数组最终组件类型为map或javabean则新数组component class为map
+     * @Description: 依据源数组类型创建新空数组,如果源数组最终组件类型为map或javabean则新数组组件类型为map
      * @param: 源数组array
      * @param: 数组大小
      * @return: 新数组对象
@@ -301,7 +302,6 @@ public class TypeUtils {
             }
         }
     }
-
     /**
      * @Title: createEmptyArray
      * @Description: 创建空数组
@@ -353,7 +353,7 @@ public class TypeUtils {
     /**
      * @Title: getArrayTypeDimension
      * @Description: 获取数组类型维度
-     * @param: type -> GenericArrayType 或者 数组class
+     * @param: type -> GenericArrayType or array class
      * @return: 数组类型维度
      */
     public static int getArrayTypeDimension(Type type) {
@@ -374,7 +374,6 @@ public class TypeUtils {
             }
         }
     }
-
     public static Class<?> getFieldActualClass(Field field, Object value) {
         if (value != null) {
             return value.getClass();
@@ -385,6 +384,13 @@ public class TypeUtils {
         return null;
     }
 
+    /**
+     * @Title: createArrayByComponentType
+     * @Description: 依据组件类型创建空数组
+     * @param: 组件类型
+     * @param: 数组大小
+     * @return: 空数组
+     */
     private static Object createArrayByComponentType(Class<?> componentCls, int length) {
         if (isJavaBeanClass(componentCls) || isMapClass(componentCls)) {
             return Array.newInstance(Map.class, length);
@@ -496,13 +502,11 @@ public class TypeUtils {
             return Double.class;
         }
     }
-
     /**
      * @Title: getArrayOrCollectionSize
      * @Description: 获得数组或集合元素大小，如果object不是一个数组或集合，则返回0
      * @param: object source
      * @return: size
-     * @throws
      */
     public static int getArrayOrCollectionSize(Object object) {
         if (isCollectionClass(object.getClass())) {
@@ -514,6 +518,12 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * @Title: getCanonicalName
+     * @Description: 获取类全限定名称
+     * @param: Class
+     * @return: String
+     */
     public static String getCanonicalName(Class<?> cls) {
         if (cls == null) {
             return null;
@@ -537,6 +547,14 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * @Title: getArrayCanonicalName
+     * @Description: 获取数组全限定名称 如: a[2][3]
+     * @param: 数组前缀
+     * @param: 数组维度
+     * @param: 数组索引
+     * @return: 获取数组全限定名称
+     */
     public static String getArrayCanonicalName(String prefix, int dimension, String index) {
         if (StringUtils.isEmpty(prefix) || dimension < 0) {
             return null;
@@ -566,7 +584,6 @@ public class TypeUtils {
             return getCanonicalName(componentClass) + getArrayBracketDesc(dimension, index);
         }
     }
-
     /**
      * @Title: getPrimitiveArrayCanonicalName
      * @Description: 获得基本类型数组名称如:int[2][]
@@ -605,7 +622,7 @@ public class TypeUtils {
             if (StringUtils.isEmpty(index)) {
                 str.append("[]");
             } else {
-                str.append("[").append(index).append("]");
+                str.append("[" + index + "]");
             }
             return getArrayBracketDesc(str.toString(), --dimension);
         }
@@ -630,8 +647,14 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * @Title: findGetterMethod
+     * @Description: 获取当前字段的get方法
+     * @param: 当前字段
+     * @return: get method
+     */
     public static Method findGetterMethod(Field field) {
-        String getterMethodName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
+        String getterMethodName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1, field.getName().length());
         try {
             return ReflectionUtils.findMethod(field.getDeclaringClass(), getterMethodName);
         } catch (Exception e) {
@@ -639,13 +662,57 @@ public class TypeUtils {
         }
     }
 
+    /**
+     * @Title: findGetterMethod
+     * @Description: 获取当前字段的set方法
+     * @param: 当前字段
+     * @return: get method
+     */
     public static Method findSetterMethod(Field field) {
-        String setterMethodName = "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
+        String setterMethodName = "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1, field.getName().length());
         try {
             return ReflectionUtils.findMethod(field.getDeclaringClass(), setterMethodName, field.getType());
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static boolean isNumber(String str) {
+        if (StringUtils.isEmpty(str)) {
+            return false;
+        } else {
+            char[] chrs = str.toCharArray();
+            for (char c : chrs) {
+                if (c < '0' || c > '9') {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public static ClassLoader getClassLoader() {
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+        catch (Throwable ex) {
+            // Cannot access thread context ClassLoader - falling back...
+        }
+        if (cl == null) {
+            // No thread context class loader -> use class loader of this class.
+            cl = TypeUtils.class.getClassLoader();
+            if (cl == null) {
+                // getClassLoader() returning null indicates the bootstrap ClassLoader
+                try {
+                    cl = ClassLoader.getSystemClassLoader();
+                }
+                catch (Throwable ex) {
+                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                }
+            }
+        }
+        return cl;
     }
 
 }

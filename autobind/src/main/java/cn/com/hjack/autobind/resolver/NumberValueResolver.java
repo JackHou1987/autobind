@@ -4,6 +4,13 @@
 package cn.com.hjack.autobind.resolver;
 
 
+import cn.com.hjack.autobind.ResolveConfig;
+import cn.com.hjack.autobind.Result;
+import cn.com.hjack.autobind.TypeWrapper;
+import cn.com.hjack.autobind.utils.CastUtils;
+import cn.com.hjack.autobind.utils.Constants;
+import cn.com.hjack.autobind.validation.DefaultResult;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -11,16 +18,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.ResolveConfig;
-import cn.com.hjack.autobind.Result;
-import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.validation.DefaultResult;
-import cn.com.hjack.autobind.utils.CastUtils;
-import com.google.common.util.concurrent.AtomicDouble;
 
 
 /**
@@ -35,12 +32,8 @@ public class NumberValueResolver extends AbstractTypeValueResolver {
     public static NumberValueResolver instance = new NumberValueResolver();
 
     private NumberValueResolver() {
-        super.registerInternalConverter(Number.class, Byte.class, (value, config) -> {
-            return value.byteValue();
-        });
-        super.registerInternalConverter(String.class, Byte.class, (value, config) -> {
-            return Byte.parseByte(value);
-        });
+        super.registerInternalConverter(Number.class, Byte.class, (value, config) -> value.byteValue());
+        super.registerInternalConverter(String.class, Byte.class, (value, config) -> Byte.parseByte(value));
         super.registerInternalConverter(Number.class, byte.class, (value, config) -> {
             return value.byteValue();
         });
@@ -228,9 +221,7 @@ public class NumberValueResolver extends AbstractTypeValueResolver {
         super.registerInternalConverter(Number.class, BigInteger.class, (value, config) -> {
             return BigInteger.valueOf(value.longValue());
         });
-        super.registerInternalConverter(String.class, BigInteger.class, (value, config) -> {
-            return new BigInteger(value);
-        });
+        super.registerInternalConverter(String.class, BigInteger.class, (value, config) -> new BigInteger(value));
         super.registerInternalConverter(OptionalInt.class, BigInteger.class, (value, config) -> {
             return BigInteger.valueOf(value.orElse(0));
         });
@@ -254,51 +245,6 @@ public class NumberValueResolver extends AbstractTypeValueResolver {
         });
         super.registerInternalConverter(OptionalDouble.class, BigDecimal.class, (value, config) -> {
             return BigDecimal.valueOf(value.orElse(0));
-        });
-        super.registerInternalConverter(Number.class, AtomicInteger.class, (value, config) -> {
-            return new AtomicInteger(value.intValue());
-        });
-        super.registerInternalConverter(String.class, AtomicInteger.class, (value, config) -> {
-            return new AtomicInteger(Integer.parseInt(value));
-        });
-        super.registerInternalConverter(OptionalInt.class, AtomicInteger.class, (value, config) -> {
-            return new AtomicInteger(value.orElse(0));
-        });
-        super.registerInternalConverter(OptionalLong.class, AtomicInteger.class, (value, config) -> {
-            return new AtomicInteger((int) value.orElse(0));
-        });
-        super.registerInternalConverter(OptionalDouble.class, AtomicInteger.class, (value, config) -> {
-            return new AtomicInteger((int) value.orElse(0));
-        });
-        super.registerInternalConverter(Number.class, AtomicLong.class, (value, config) -> {
-            return new AtomicLong(value.longValue());
-        });
-        super.registerInternalConverter(String.class, AtomicLong.class, (value, config) -> {
-            return new AtomicLong(Long.parseLong(value));
-        });
-        super.registerInternalConverter(OptionalInt.class, AtomicLong.class, (value, config) -> {
-            return new AtomicLong(value.orElse(0));
-        });
-        super.registerInternalConverter(OptionalLong.class, AtomicLong.class, (value, config) -> {
-            return new AtomicLong(value.orElse(0));
-        });
-        super.registerInternalConverter(OptionalDouble.class, AtomicLong.class, (value, config) -> {
-            return new AtomicLong((long) value.orElse(0));
-        });
-        super.registerInternalConverter(Number.class, AtomicDouble.class, (value, config) -> {
-            return new AtomicDouble(value.doubleValue());
-        });
-        super.registerInternalConverter(String.class, AtomicDouble.class, (value, config) -> {
-            return new AtomicDouble(Double.parseDouble(value));
-        });
-        super.registerInternalConverter(OptionalInt.class, AtomicDouble.class, (value, config) -> {
-            return new AtomicDouble(value.orElse(0));
-        });
-        super.registerInternalConverter(OptionalLong.class, AtomicDouble.class, (value, config) -> {
-            return new AtomicDouble(value.orElse(0));
-        });
-        super.registerInternalConverter(OptionalDouble.class, AtomicDouble.class, (value, config) -> {
-            return new AtomicDouble(value.orElse(0));
         });
         super.registerInternalConverter(String.class, OptionalInt.class, (value, config) -> {
             return OptionalInt.of(Integer.parseInt(value));

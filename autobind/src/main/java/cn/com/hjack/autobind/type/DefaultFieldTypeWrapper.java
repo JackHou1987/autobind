@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package cn.com.hjack.autobind.type;
 
 import cn.com.hjack.autobind.FieldTypeWrapper;
@@ -63,7 +66,7 @@ public class DefaultFieldTypeWrapper extends AbstractTypeWrapper implements Fiel
      * <br> 2. 该字段类型为泛型的参数化类型，typeWrapper 为实际参数化类型
      * @param field
      * @param implClass
-     * @param ownerType
+     * @param typeWrapper
      */
     public DefaultFieldTypeWrapper(Field field, Class<?> implClass, TypeWrapper ownerType, TypeWrapper actualType) {
         super(Optional.ofNullable(ownerType).orElse(DefaultTypeWrapper.EMPTY).resolveVariableContext());
@@ -92,13 +95,12 @@ public class DefaultFieldTypeWrapper extends AbstractTypeWrapper implements Fiel
         // return new DefaultFieldTypeWrapper(field, implClass, ownerType, actualType.getGeneric(index));
         return TypeWrappers.getFieldType(field, implClass, ownerType, actualType.getGeneric(index));
     }
-
     @Override
     public TypeWrapper[] getGenerics() {
         return Arrays.stream(actualType.getGenerics()).map(value -> {
             // return new DefaultFieldTypeWrapper(field, implClass, ownerType, value);
             return TypeWrappers.getFieldType(field, implClass, ownerType, value);
-        }).collect(Collectors.toList()).toArray(new FieldTypeWrapper[0]);
+        }).toArray(FieldTypeWrapper[]::new);
     }
 
     @Override
@@ -136,11 +138,6 @@ public class DefaultFieldTypeWrapper extends AbstractTypeWrapper implements Fiel
     }
 
     @Override
-    public Field getField() {
-        return field;
-    }
-
-    @Override
     public Class<?> getFieldTypeClass() {
         return field.getType();
     }
@@ -174,5 +171,3 @@ public class DefaultFieldTypeWrapper extends AbstractTypeWrapper implements Fiel
         }
     }
 }
-
-

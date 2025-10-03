@@ -43,38 +43,37 @@ public class Test {
     }
 
 
-    @SuppressWarnings("unchecked")
-    private static void testToList() {
-        Map<String, Source.SourceSub> map5 = new HashMap<>();
-        Source.SourceSub sourceSub5 = new Source.SourceSub();
-        sourceSub5.setSub1("sub5");
-        sourceSub5.setSub2(0);
-        sourceSub5.setSub3(new Date());
-        map5.put("key", sourceSub5);
-        List<Map<String, Source.SourceSub>> list = new ArrayList<>();
-        list.add(map5);
-
-        Result<List<Map<String, TargetSub1>>> result = ConvertUtils.toList(list, new TypeReference<List<Map<String, TargetSub1>>>() {}, null);
-        System.out.println(JSONObject.toJSONString(result.instance(), SerializerFeature.SortField));
-        List<Map<String, Target.TargetSub1>> target = Convert.convert(new cn.hutool.core.lang.TypeReference<List<Map<String, Target.TargetSub1>>>() {}, list);
-        System.out.println(JSONObject.toJSONString(target, SerializerFeature.SortField));
-
-        List<List<Map<String, Source.SourceSub>>> src9 = new ArrayList<>();
-        Map<String, Source.SourceSub> map9 = new HashMap<>();
-        Source.SourceSub sourceSub9 = new Source.SourceSub();
-        sourceSub9.setSub1("sub6");
-        sourceSub9.setSub2(0);
-        sourceSub9.setSub3(new Date());
-        map9.put("sub9map", sourceSub9);
-        src9.add(Lists.newArrayList(map9));
-
-        ResolveConfig config = ResolveConfig.builder().build();
-        Result<List<List<Map<String, Target.TargetSub1>>>> result2 = ConvertUtils.toList(src9, new TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {}, config);
-        System.out.println(JSONObject.toJSONString(result2.instance(), SerializerFeature.SortField));
-        List<List<Map<String, Target.TargetSub1>>> target2 = Convert.convert(new cn.hutool.core.lang.TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {}, src9);
-        System.out.println(JSONObject.toJSONString(target2, SerializerFeature.SortField));
-
-    }
+//    private static void testToList() {
+//        Map<String, Source.SourceSub> map5 = new HashMap<>();
+//        Source.SourceSub sourceSub5 = new Source.SourceSub();
+//        sourceSub5.setSub1("sub5");
+//        sourceSub5.setSub2(0);
+//        sourceSub5.setSub3(new Date());
+//        map5.put("key", sourceSub5);
+//        List<Map<String, Source.SourceSub>> list = new ArrayList<>();
+//        list.add(map5);
+//
+//        Result<List<Map<String, TargetSub1>>> result = ConvertUtils.toList(list, new TypeReference<List<Map<String, TargetSub1>>>() {}, null);
+//        System.out.println(JSONObject.toJSONString(result.instance(), SerializerFeature.SortField));
+//        List<Map<String, Target.TargetSub1>> target = Convert.convert(new cn.hutool.core.lang.TypeReference<List<Map<String, Target.TargetSub1>>>() {}, list);
+//        System.out.println(JSONObject.toJSONString(target, SerializerFeature.SortField));
+//
+//        List<List<Map<String, Source.SourceSub>>> src9 = new ArrayList<>();
+//        Map<String, Source.SourceSub> map9 = new HashMap<>();
+//        Source.SourceSub sourceSub9 = new Source.SourceSub();
+//        sourceSub9.setSub1("sub6");
+//        sourceSub9.setSub2(0);
+//        sourceSub9.setSub3(new Date());
+//        map9.put("sub9map", sourceSub9);
+//        src9.add(Lists.newArrayList(map9));
+//
+//        ResolveConfig config = ResolveConfig.builder().build();
+//        Result<List<List<Map<String, Target.TargetSub1>>>> result2 = ConvertUtils.toList(src9, new TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {}, config);
+//        System.out.println(JSONObject.toJSONString(result2.instance(), SerializerFeature.SortField));
+//        List<List<Map<String, Target.TargetSub1>>> target2 = Convert.convert(new cn.hutool.core.lang.TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {}, src9);
+//        System.out.println(JSONObject.toJSONString(target2, SerializerFeature.SortField));
+//
+//    }
 
     @SuppressWarnings("unchecked")
     private static void testToObject() {

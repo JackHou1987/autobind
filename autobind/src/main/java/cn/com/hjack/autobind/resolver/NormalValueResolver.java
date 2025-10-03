@@ -3,15 +3,15 @@
  */
 package cn.com.hjack.autobind.resolver;
 
-import cn.com.hjack.autobind.utils.Constants;
 import cn.com.hjack.autobind.ConvertFeature;
 import cn.com.hjack.autobind.ResolveConfig;
 import cn.com.hjack.autobind.Result;
 import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.validation.DefaultResult;
+import cn.com.hjack.autobind.factory.TypeValueResolvers;
 import cn.com.hjack.autobind.factory.TypeWrappers;
 import cn.com.hjack.autobind.utils.CastUtils;
-import cn.com.hjack.autobind.utils.TypeUtils;
+import cn.com.hjack.autobind.utils.Constants;
+import cn.com.hjack.autobind.validation.DefaultResult;
 
 import java.io.File;
 import java.net.URI;
@@ -22,11 +22,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZoneId;
+import java.util.BitSet;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -37,6 +39,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  */
 public class NormalValueResolver extends AbstractTypeValueResolver {
+
+    public static NormalValueResolver instance = new NormalValueResolver();
 
     @Override
     protected Result<Object> doResolveValue(Object source, TypeWrapper targetType, ResolveConfig config)
@@ -134,7 +138,6 @@ public class NormalValueResolver extends AbstractTypeValueResolver {
                     return childResult;
                 }
             }
-
             if (targetClass == ZoneId.class) {
                 if (source == null) {
                     return DefaultResult.defaultSuccessResult(ZoneId.systemDefault());
@@ -188,14 +191,16 @@ public class NormalValueResolver extends AbstractTypeValueResolver {
                 }
             }
             if (targetClass == Boolean.class) {
-                if (source instanceof String) {
+                if (source == null) {
+                    return DefaultResult.defaultSuccessResult(null);
+                } else if (source instanceof String) {
                     String value = (String) source;
                     return DefaultResult.defaultSuccessResult(CastUtils.toBoolean(value));
                 } else if (source instanceof Number) {
                     Number value = (Number) source;
                     return DefaultResult.defaultSuccessResult(CastUtils.toBoolean(value));
                 } else {
-                    return DefaultResult.defaultSuccessResult("can not convert source to Boolean, unsupport source type");
+                    throw new IllegalStateException("can not convert source to Boolean, unsupport source type");
                 }
             }
             if (targetClass == boolean.class) {
@@ -206,13 +211,14 @@ public class NormalValueResolver extends AbstractTypeValueResolver {
                     Number value = (Number) source;
                     return DefaultResult.defaultSuccessResult(Optional.ofNullable(CastUtils.toBoolean(value)).orElse(Boolean.FALSE));
                 } else {
-                    return DefaultResult.defaultSuccessResult("can not convert source to boolean, unsupport source type");
+                    throw new IllegalStateException("can not convert source to boolean, unsupport source type");
                 }
             }
-
             if (ByteBuffer.class.isAssignableFrom(targetClass)) {
-                if (source instanceof String) {
-                    int value = Integer.parseInt((String) source);
+                if (source == null) {
+                    return DefaultResult.defaultSuccessResult(null);
+                } else if (source instanceof String) {
+                    Integer value = Integer.parseInt((String) source);
                     // 堆外内存
                     if (ConvertFeature.isEnabled(ConvertFeature.of(config.convertFeature()), ConvertFeature.NATIVE_BUFFER)) {
                         return DefaultResult.defaultSuccessResult(ByteBuffer.allocate(value));
@@ -233,45 +239,74 @@ public class NormalValueResolver extends AbstractTypeValueResolver {
                     Byte[] value = (Byte[]) source;
                     return DefaultResult.defaultSuccessResult(ByteBuffer.wrap(CastUtils.toPrimByteArrayValue(value)));
                 } else {
-                    throw new IllegalStateException("can not convert to" + TypeUtils.getCanonicalName(targetClass) + " unsupport source type");
-                }
-            }
-            if (targetClass == AtomicBoolean.class) {
-                if (source instanceof String) {
-                    String value = (String) source;
-                    return DefaultResult.defaultSuccessResult(new AtomicBoolean(Optional.ofNullable(CastUtils.toBoolean(value)).orElse(Boolean.FALSE)));
-                } else if (source instanceof Number) {
-                    Number value = (Number) source;
-                    return DefaultResult.defaultSuccessResult(new AtomicBoolean(Optional.ofNullable(CastUtils.toBoolean(value)).orElse(Boolean.FALSE)));
-                } else {
-                    return DefaultResult.defaultSuccessResult("can not convert source to boolean, unsupport source type");
+                    throw new IllegalStateException("can not convert to ByteBuffer unsupport source type");
                 }
             }
             if (targetClass == TimeZone.class) {
-                if (source instanceof String) {
+                if (source == null) {
+                    return DefaultResult.defaultSuccessResult(null);
+                } else if (source instanceof String) {
                     String value = (String) source;
                     return DefaultResult.defaultSuccessResult(TimeZone.getTimeZone(value));
                 } else if (source instanceof ZoneId) {
                     ZoneId value = (ZoneId) source;
                     return DefaultResult.defaultSuccessResult(TimeZone.getTimeZone(value));
                 } else {
-                    return DefaultResult.defaultSuccessResult("can not convert source to boolean, unsupport source type");
+                    throw new IllegalStateException("can not convert source to TimeZone, unsupport source type");
+                }
+            }
+            if (targetClass == EnumSet.class) {
+                if (source == null) {
+                    return DefaultResult.defaultSuccessResult(null);
+                } else if (source instanceof Class) {
+                    Class<?> sourceClass = (Class<?>) source;
+                    return DefaultResult.defaultSuccessResult(EnumSet.noneOf(sourceClass.asSubclass(Enum.class)));
+                } else {
+                    Result<Class<?>> childResult = TypeValueResolvers.getResolver(Class.class).resolve(source, TypeWrappers.getType(Class.class), config);
+                    if (childResult.success()) {
+                        Class<?> sourceClass = childResult.instance();
+                        return DefaultResult.defaultSuccessResult(EnumSet.noneOf(sourceClass.asSubclass(Enum.class)));
+                    } else {
+                        throw new IllegalStateException("can not convert source to target, unkown source type");
+                    }
+                }
+            }
+            if (targetClass == EnumMap.class) {
+                if (source == null) {
+                    return DefaultResult.defaultSuccessResult(null);
+                } else if (source instanceof Class) {
+                    Class<?> sourceClass = (Class<?>) source;
+                    return DefaultResult.defaultSuccessResult(new EnumMap<>(sourceClass.asSubclass(Enum.class)));
+                } else {
+                    Result<Class<?>> childResult = TypeValueResolvers.getResolver(Class.class).resolve(source, TypeWrappers.getType(Class.class), config);
+                    if (childResult.success()) {
+                        Class<?> sourceClass = childResult.instance();
+                        return DefaultResult.defaultSuccessResult(new EnumMap<>(sourceClass.asSubclass(Enum.class)));
+                    } else {
+                        throw new IllegalStateException("can not convert source to target, unkown source type");
+                    }
+                }
+            }
+            if (targetClass == BitSet.class) {
+                if (source == null) {
+                    return DefaultResult.defaultSuccessResult(null);
+                } else {
+                    Result<byte[]> childResult = TypeValueResolvers.getResolver(byte[].class).resolve(source, TypeWrappers.getType(byte[].class), config);
+                    if (childResult.success()) {
+                        return DefaultResult.defaultSuccessResult(childResult.instance());
+                    } else {
+                        throw new IllegalStateException("can not convert source to target, unkown source type");
+                    }
                 }
             } else {
-                Result<Object> childResult = convertToStr(source, config);
-                if (!childResult.success()) {
-                    return childResult;
-                } else {
-                    childResult.instance(TimeZone.getTimeZone((String) childResult.instance()));
-                    return childResult;
-                }
+                throw new IllegalStateException("can not convert source to target, unkown target type");
             }
         } catch (Exception e) {
             Result<Object> result = new DefaultResult<Object>();
             result.setResultCode(Constants.FAIL_CODE);
             result.setResultMsg(e.getMessage());
+            return result;
         }
-        return null;
     }
 
     private Result<Object> convertToStr(Object source, ResolveConfig config) throws Exception {

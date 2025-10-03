@@ -1,6 +1,11 @@
+/**
+ *
+ */
 package cn.com.hjack.autobind;
 
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -32,11 +37,15 @@ public class ResolveConfig implements Cloneable {
     /**
      * 全局校验器
      */
-    private cn.com.hjack.autobind.Validator validator;
+    private Validator validator;
 
     private ConvertFeature[] features = new ConvertFeature[0];
 
     private MapConvertFeature[] mapConvertFeatures = new MapConvertFeature[0];
+
+    private Map<String, Object> attributes = new HashMap<>();
+
+    private ConvertInterceptor convertInterceptor;
 
     private ResolveConfig() {
     }
@@ -48,6 +57,7 @@ public class ResolveConfig implements Cloneable {
         this.charset = builder.charset;
         this.decimalFormat = builder.decimalFormat;
         this.validator = builder.validator;
+        this.convertInterceptor = builder.convertInterceptor;
     }
 
     private ResolveConfig(ResolveConfig config) {
@@ -115,6 +125,8 @@ public class ResolveConfig implements Cloneable {
 
         private Validator validator;
 
+        private ConvertInterceptor convertInterceptor;
+
         public Builder fastMode(boolean fastMode) {
             this.fastMode = fastMode;
             return this;
@@ -124,7 +136,6 @@ public class ResolveConfig implements Cloneable {
             this.features = features;
             return this;
         }
-
         public Builder mapConvertFeature(MapConvertFeature[] mapConvertFeatures) {
             this.mapConvertFeatures = mapConvertFeatures;
             return this;
@@ -140,8 +151,13 @@ public class ResolveConfig implements Cloneable {
             return this;
         }
 
-        public Builder validator(cn.com.hjack.autobind.Validator validator) {
+        public Builder validator(Validator validator) {
             this.validator = validator;
+            return this;
+        }
+
+        public Builder interceptor(ConvertInterceptor interceptor) {
+            this.convertInterceptor = interceptor;
             return this;
         }
 
@@ -255,8 +271,39 @@ public class ResolveConfig implements Cloneable {
         return this.mapConvertFeatures;
     }
 
-    public cn.com.hjack.autobind.Validator validator() {
+    public Validator validator() {
         return this.validator;
+    }
+
+    public ResolveConfig attributes(Map<String, Object> attributes) {
+        ResolveConfig config = this.clone();
+        config.attributes.putAll(attributes);
+        return config;
+    }
+
+    public ResolveConfig attribute(String key, String value) {
+        ResolveConfig config = this.clone();
+        config.attributes.putAll(this.attributes);
+        config.attributes.put(key, value);
+        return config;
+    }
+
+    public Object attribute(String key) {
+        return attributes.get(key);
+    }
+
+    public ResolveConfig interceptor(ConvertInterceptor interceptor) {
+        ResolveConfig config = this.clone();
+        config.convertInterceptor = interceptor;
+        return config;
+    }
+
+    public ResolveConfig removeInterceptor() {
+        return this.clone();
+    }
+
+    public ConvertInterceptor interceptor() {
+        return this.convertInterceptor;
     }
 
 }

@@ -3,16 +3,17 @@
  */
 package cn.com.hjack.autobind.resolver;
 
+import cn.com.hjack.autobind.ResolveConfig;
+import cn.com.hjack.autobind.Result;
+import cn.com.hjack.autobind.TypeValueResolver;
+import cn.com.hjack.autobind.TypeWrapper;
+import cn.com.hjack.autobind.factory.ConversionServiceProvider;
 import cn.com.hjack.autobind.factory.TypeValueResolvers;
+import cn.com.hjack.autobind.factory.TypeWrappers;
+import cn.com.hjack.autobind.utils.Constants;
+import cn.com.hjack.autobind.validation.DefaultResult;
 import org.springframework.core.convert.ConversionService;
 
-import cn.com.hjack.autobind.Result;
-import cn.com.hjack.autobind.validation.DefaultResult;
-import cn.com.hjack.autobind.TypeWrapper;
-import cn.com.hjack.autobind.ResolveConfig;
-import cn.com.hjack.autobind.TypeValueResolver;
-import cn.com.hjack.autobind.utils.Constants;
-import cn.com.hjack.autobind.factory.ConversionServiceProvider;
 
 /**
  * @ClassName: AbstractGenericTypeValueResolver
@@ -29,10 +30,10 @@ public abstract class AbstractGenericTypeValueResolver extends AbstractTypeValue
         if (source == null || targetType == null || targetType.resolve() == null) {
             return DefaultResult.errorResult(null, Constants.FAIL_CODE, "source or target type can not be null");
         }
-        TypeWrapper genericType = targetType.resolveGeneric(targetType.getGeneric(0));
+        TypeWrapper genericType = TypeWrappers.getAndResolveGenericType(targetType, 0);
         if (genericType == null || genericType.resolve() == null
                 || genericType.resolve() == Object.class) {
-            return DefaultResult.defaultSuccessResult(this.createObjectAndSetGenericValue(targetType.resolve(), source));
+            return DefaultResult.defaultSuccessResult(createObjectAndSetGenericValue(targetType.resolve(), source));
         } else {
             DefaultResult<T> result = new DefaultResult<>();
             TypeValueResolver valueResolver = TypeValueResolvers.getResolver(genericType.resolve());
@@ -46,7 +47,7 @@ public abstract class AbstractGenericTypeValueResolver extends AbstractTypeValue
                     } else {
                         result.setResultCode(Constants.FAIL_CODE);
                         result.setResultMsg(childResult.resultMsg());
-                        T instance = this.createObjectAndSetGenericValue(targetType.resolve(), childResult.instance());
+                        T instance = createObjectAndSetGenericValue(targetType.resolve(), childResult.instance());
                         result.setInstance(instance);
                     }
                 } else {
@@ -63,13 +64,18 @@ public abstract class AbstractGenericTypeValueResolver extends AbstractTypeValue
                 } else {
                     return DefaultResult.errorResult(createObject(targetType.resolve()));
                 }
-
             }
         }
     }
 
     protected abstract <T> T createObjectAndSetGenericValue(Class<?> targetType, Object value);
 
+    /**
+     * @Title: createObject
+     * @Description: 创建泛型对象
+     * @param: 目标泛型类型
+     * @return: 泛型对象
+     */
     protected abstract <T> T createObject(Class<?> targetType);
 
 }
