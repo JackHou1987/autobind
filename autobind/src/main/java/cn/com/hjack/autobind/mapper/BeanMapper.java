@@ -27,6 +27,7 @@ import cn.com.hjack.autobind.factory.TypeValueResolvers;
 import cn.com.hjack.autobind.factory.TypeWrappers;
 import cn.com.hjack.autobind.utils.*;
 import cn.com.hjack.autobind.validation.DefaultResult;
+import com.google.common.base.Strings;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.Transformer;
@@ -68,18 +69,6 @@ public class BeanMapper<T> {
     private ConversionService conversionService;
 
     private ResolveConfig config;
-
-    public BeanMapper(T target) {
-        this(target, new HashMap<>(), MapConvertFeature.NOOP);
-    }
-
-    public BeanMapper(T target, Map<String, TypeWrapper> variableContext) {
-        this(target, variableContext, MapConvertFeature.NOOP);
-    }
-
-    public BeanMapper(T target, Map<String, TypeWrapper> variableContext, MapConvertFeature... features) {
-        this(target, variableContext, ResolveConfig.defaultConfig);
-    }
 
     @SuppressWarnings("unchecked")
     public BeanMapper(T target, Map<String, TypeWrapper> variableContext, ResolveConfig config) {
@@ -189,7 +178,7 @@ public class BeanMapper<T> {
         addValidator(new Validator() {
             @Override
             public void validate(Object t, ValidationErrors errors) {
-                if (StringUtils.isEmpty(resultMsg)) {
+                if (Strings.isNullOrEmpty(resultMsg)) {
                     errors.collectError(field.getName(), field.getName() + ".bind error");
                 } else {
                     errors.collectError(field.getName(), field.getName() + "." + resultMsg);
@@ -250,7 +239,7 @@ public class BeanMapper<T> {
         EvaluationContext context = new StandardEvaluationContext(target);
         ExpressionParser parser = new SpelExpressionParser();
         fieldNameMap.forEach((fieldName, beanField) -> {
-            if (StringUtils.isEmpty(fieldName) || beanField == null) {
+            if (Strings.isNullOrEmpty(fieldName) || beanField == null) {
                 return;
             }
             Field field = beanField.getField();
@@ -288,11 +277,11 @@ public class BeanMapper<T> {
      */
     private Object getValue(Map<String, Object> source, AutoBindField autoBind, Field field) {
         String fieldName = getFieldName(autoBind, field);
-        if (StringUtils.isEmpty(fieldName)) {
+        if (Strings.isNullOrEmpty(fieldName)) {
             return null;
         }
         String defaultValue = null;
-        if (autoBind != null && !StringUtils.isEmpty(autoBind.defaultValue())) {
+        if (autoBind != null && !Strings.isNullOrEmpty(autoBind.defaultValue())) {
             defaultValue = autoBind.defaultValue();
         }
         return getValueOrDefault(source, fieldName, field.getType(), defaultValue);
@@ -366,7 +355,7 @@ public class BeanMapper<T> {
         } else if (autoBind == null) {
             return field.getName();
         } else {
-            if (!StringUtils.isEmpty(autoBind.recvFieldName())) {
+            if (!Strings.isNullOrEmpty(autoBind.recvFieldName())) {
                 return autoBind.recvFieldName();
             } else {
                 return field.getName();
@@ -410,7 +399,7 @@ public class BeanMapper<T> {
             if (target != null) {
                 setValue(source);
             } else {
-                if (StringUtils.isEmpty(source)) {
+                if (Strings.isNullOrEmpty(source)) {
                     this.setValue(null);
                 } else {
                     try {
@@ -489,7 +478,7 @@ public class BeanMapper<T> {
                             if (TypeUtils.isMapClass(target.getClass())) {
                                 errrMsgs.add(msg);
                             } else {
-                                if (!StringUtils.isEmpty(fieldName)) {
+                                if (!Strings.isNullOrEmpty(fieldName)) {
                                     errors.rejectValue(fieldName, fieldName + "_error", msg);
                                 } else {
                                     errors.reject("error", msg);
@@ -596,13 +585,13 @@ public class BeanMapper<T> {
             return;
         }
         String condition = autoBind.condition();
-        if (!StringUtils.isEmpty(condition)) {
+        if (!Strings.isNullOrEmpty(condition)) {
             addValidator(new Validator() {
                 @Override
                 public void validate(Object t, ValidationErrors errors) {
                     Expression exps = parser.parseExpression(condition);
                     if (Boolean.FALSE.equals(exps.getValue(context, Boolean.class))) {
-                        if (!StringUtils.isEmpty(autoBind.errorMsg())) {
+                        if (!Strings.isNullOrEmpty(autoBind.errorMsg())) {
                             errors.collectError(field.getName(), field.getName() + "." + autoBind.errorMsg());
                         } else {
                             errors.collectError(field.getName(), field.getName() + ".bind error");
@@ -634,7 +623,7 @@ public class BeanMapper<T> {
         }
         Map<String, Object> result = new HashMap<>();
         if (source == null) {
-            if (!StringUtils.isEmpty(keyName)) {
+            if (!Strings.isNullOrEmpty(keyName)) {
                 result.put(keyName, TypeUtils.createCollection(collectionType));
             } else {
                 result.put("LIST", TypeUtils.createCollection(collectionType));
@@ -642,7 +631,7 @@ public class BeanMapper<T> {
             return result;
         } else {
             Collection<Object> target = convertBeanToMap4Collection((Collection<Object>) source, new HashMap<>(), features);
-            if (!StringUtils.isEmpty(keyName)) {
+            if (!Strings.isNullOrEmpty(keyName)) {
                 result.put(keyName, target);
             } else {
                 result.put("LIST", target);
@@ -667,7 +656,7 @@ public class BeanMapper<T> {
                     if (input == null) {
                         return null;
                     } else if (TypeUtils.isJavaBeanClass(input.getClass())) {
-                        return convertBeanToMap4JavaBean(input, javaBeanFieldObject, features);
+                        return convertBeanToMap4JavaBean(input, javaBeanFieldObject);
                     } else {
                         return input;
                     }
@@ -686,21 +675,21 @@ public class BeanMapper<T> {
     public static Map<String, Object> beanToMap4Map(String keyName, Map<String, Object> source, MapConvertFeature... features) {
         Map<String, Object> result = new HashMap<>();
         if (source == null) {
-            if (!StringUtils.isEmpty(keyName)) {
+            if (!Strings.isNullOrEmpty(keyName)) {
                 result.put(keyName, new HashMap<>());
             } else {
                 result.put("MAP", new HashMap<>());
             }
             return result;
         } else {
-            Map<String, Object> target = convertBeanToMap4Map((Map<String, Object>) source, new HashMap<>(), features);
+            Map<String, Object> target = convertBeanToMap4Map(source, new HashMap<>(), features);
             MapConvertFeature[] featureArray = features;
             if (MapConvertFeature.isEnabled(MapConvertFeature.of(featureArray), MapConvertFeature.KEY_EXPAND)) {
                 if (!MapUtils.isEmpty(target)) {
                     target.forEach(result::put);
                 }
             } else {
-                if (!StringUtils.isEmpty(keyName)) {
+                if (!Strings.isNullOrEmpty(keyName)) {
                     result.put(keyName, target);
                 } else {
                     result.put("MAP", target);
@@ -742,7 +731,7 @@ public class BeanMapper<T> {
             return result;
         } else {
             Object target = convertBeanToMap4Array(source, new HashMap<>(), features);
-            if (!StringUtils.isEmpty(keyName)) {
+            if (!Strings.isNullOrEmpty(keyName)) {
                 result.put(keyName, target);
             } else {
                 result.put("ARRAY", target);
@@ -766,7 +755,7 @@ public class BeanMapper<T> {
             for (int i = 0; i < length; i++) {
                 Object obj = Array.get(source, i);
                 if (TypeUtils.isJavaBeanClass(obj.getClass())) {
-                    Array.set(target, i, convertBeanToMap4JavaBean(obj, javaBeanFieldObject, features));
+                    Array.set(target, i, convertBeanToMap4JavaBean(obj, javaBeanFieldObject));
                 } else {
                     Array.set(target, i, obj);
                 }
@@ -789,12 +778,12 @@ public class BeanMapper<T> {
         if (source == null) {
             try {
                 Object object = objCls.newInstance();
-                Map<String, Object> target = convertBeanToMap4JavaBean(object, new HashMap<>(), features);
-                if (!StringUtils.isEmpty(keyName)) {
+                Map<String, Object> target = convertBeanToMap4JavaBean(object, new HashMap<>());
+                if (!Strings.isNullOrEmpty(keyName)) {
                     result.put(keyName, target);
                 } else {
                     if (!MapUtils.isEmpty(target)) {
-                        target.forEach(result::put);
+                        result.putAll(target);
                     }
                 }
             } catch (Exception e) {
@@ -802,13 +791,13 @@ public class BeanMapper<T> {
             }
             return result;
         } else {
-            Map<String, Object> target = convertBeanToMap4JavaBean(source, new HashMap<>(), features);
+            Map<String, Object> target = convertBeanToMap4JavaBean(source, new HashMap<>());
             // 如果指定key,则返回key,map结构
-            if (!StringUtils.isEmpty(keyName)) {
+            if (!Strings.isNullOrEmpty(keyName)) {
                 result.put(keyName, target);
             } else {
                 if (!MapUtils.isEmpty(target)) {
-                    target.forEach(result::put);
+                    result.putAll(target);
                 }
             }
             return result;
@@ -823,7 +812,7 @@ public class BeanMapper<T> {
      * @param: map对象中的key value转换风格
      * @return: 转换后的map对象
      */
-    private static Map<String, Object> convertBeanToMap4JavaBean(Object target, Map<Field, Object> javaBeanFieldObject, MapConvertFeature... features) {
+    private static Map<String, Object> convertBeanToMap4JavaBean(Object target, Map<Field, Object> javaBeanFieldObject) {
         if (target == null || !TypeUtils.isJavaBeanClass(target.getClass())) {
             return new HashMap<>();
         }
@@ -833,7 +822,7 @@ public class BeanMapper<T> {
             return result;
         }
         fieldMap.forEach((name, fieldWrapper) -> {
-            if (fieldWrapper == null || StringUtils.isEmpty(name)) {
+            if (fieldWrapper == null || Strings.isNullOrEmpty(name)) {
                 return;
             }
             Field field = fieldWrapper.getField();
@@ -864,9 +853,9 @@ public class BeanMapper<T> {
                     Map<String, Object> beanMap;
                     if (value == null) {
                         Object instance = valueClass.newInstance();
-                        beanMap = convertBeanToMap4JavaBean(instance, javaBeanFieldObject, features);
+                        beanMap = convertBeanToMap4JavaBean(instance, javaBeanFieldObject);
                     } else {
-                        beanMap = convertBeanToMap4JavaBean(value, javaBeanFieldObject, features);
+                        beanMap = convertBeanToMap4JavaBean(value, javaBeanFieldObject);
                     }
                     String[] fieldNames = getOutParamFieldName(autoBind, field);
                     if (fieldNames != null && fieldNames.length != 0) {
@@ -898,7 +887,7 @@ public class BeanMapper<T> {
             } else {
                 if (value == null && autoBind != null) {
                     String defaultValue = autoBind.defaultValue();
-                    if (!StringUtils.isEmpty(defaultValue)) {
+                    if (!Strings.isNullOrEmpty(defaultValue)) {
                         value = CastUtils.setNumberScale(convert(defaultValue, field.getType()), autoBind);
                         value = CastUtils.formatDate(value, autoBind);
                     }
@@ -953,7 +942,7 @@ public class BeanMapper<T> {
      */
     private static String convertMapKeyStyle(Object key, int features) {
         String mapKey = String.valueOf(key);
-        if (StringUtils.isEmpty(mapKey)) {
+        if (Strings.isNullOrEmpty(mapKey)) {
             return null;
         } else {
             String keyValue;
@@ -981,28 +970,27 @@ public class BeanMapper<T> {
      * @param: @param targetFormat
      */
     private static String convertStrStyle(String str, CaseFormat targetFormat) {
-        if (StringUtils.isEmpty(str)) {
+        if (Strings.isNullOrEmpty(str)) {
             return null;
         } else {
-            String originStr = str;
             CaseFormat sourceFormat;
-            if (originStr.matches("[A-Z0-9]+")) {
+            if (str.matches("[A-Z0-9]+")) {
                 sourceFormat = CaseFormat.UPPER_UNDERSCORE;
-            } else if (originStr.matches("[a-z0-9]+")) {
+            } else if (str.matches("[a-z0-9]+")) {
                 sourceFormat = CaseFormat.LOWER_UNDERSCORE;
             } else {
-                sourceFormat = resolveStrStyle(originStr);
+                sourceFormat = resolveStrStyle(str);
             }
             if (sourceFormat == null) {
-                return originStr;
+                return str;
             } else {
-                return sourceFormat.to(targetFormat, originStr);
+                return sourceFormat.to(targetFormat, str);
             }
         }
     }
 
     private static CaseFormat resolveStrStyle(String str) {
-        if (StringUtils.isEmpty(str)) {
+        if (Strings.isNullOrEmpty(str)) {
             return null;
         } else if (Pattern.matches("^[A-Z][a-zA-Z0-9]*$", str)) {
             return CaseFormat.UPPER_CAMEL;
@@ -1037,7 +1025,7 @@ public class BeanMapper<T> {
         } else if (TypeUtils.isMapClass(value.getClass())) {
             return value;
         } else if (TypeUtils.isJavaBeanClass(value.getClass())) {
-            return convertBeanToMap4JavaBean(value, javaBeanFieldObject, features);
+            return convertBeanToMap4JavaBean(value, javaBeanFieldObject);
         } else {
             if ((!MapConvertFeature.isEnabled(MapConvertFeature.of(features), MapConvertFeature.VALUE_CONVERT_TO_OBJ) && !MapConvertFeature.isEnabled(MapConvertFeature.of(features), MapConvertFeature.VALUE_CONVERT_TO_STRING))) {
                 return value;
@@ -1067,7 +1055,7 @@ public class BeanMapper<T> {
      * @return: 实际类型class
      */
     private static Class<?> typeInference(String str) {
-        if (StringUtils.isEmpty(str)) {
+        if (Strings.isNullOrEmpty(str)) {
             return null;
         } else if (CastUtils.isCreatable(str)) {
             try {
@@ -1083,7 +1071,7 @@ public class BeanMapper<T> {
             }
         } else if ("true".equalsIgnoreCase(str) || "false".equalsIgnoreCase(str)) {
             return Boolean.class;
-        } else if (str.indexOf(",") != -1) {
+        } else if (str.contains(",")) {
             return List.class;
         } else if (CastUtils.parseDateTime(str) != null) {
             return Date.class;

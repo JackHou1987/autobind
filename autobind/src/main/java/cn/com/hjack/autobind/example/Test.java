@@ -108,7 +108,7 @@ public class Test {
         List<List<Integer>> src13 = new ArrayList<>();
         src13.add(innerList);
         source.setSrc13(src13);
-        ResolveConfig config = ResolveConfig.builder().fastMode(false).build();
+        ResolveConfig config = ResolveConfig.builder().fastMode(true).build();
         Result<Target<Target.TargetSub3<String, Integer>>> result = ConvertUtils.toObject(source, new TypeReference<Target<Target.TargetSub3<String, Integer>>>() {}, config);
         System.out.println(JSONObject.toJSONString(result.instance(), SerializerFeature.SortField));
     }

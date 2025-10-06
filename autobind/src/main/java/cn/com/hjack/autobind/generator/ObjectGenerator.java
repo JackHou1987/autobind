@@ -19,10 +19,10 @@ import java.util.stream.IntStream;
 import cn.com.hjack.autobind.*;
 import cn.com.hjack.autobind.factory.TypeWrappers;
 import cn.com.hjack.autobind.utils.*;
+import com.google.common.base.Strings;
 import javassist.*;
 import javassist.bytecode.ClassFile;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.util.StringUtils;
 
 
 /**
@@ -106,7 +106,7 @@ public class ObjectGenerator {
                 try {
                     generateJavaBeanToMapImportsStub(pool);
                     CtClass ctClass = generateBeanToMapProxyClass(pool, beanClass);
-                    generateBeanToMapProxyFields(beanClass, pool, ctClass);
+                    generateBeanToMapProxyFields(beanClass, ctClass);
                     generateBeanToMapProxyConstructs(pool, ClassWrapper.forClass(beanClass), ctClass);
                     Method[] methods = Map.class.getDeclaredMethods();
                     for (Method method : methods) {
@@ -153,7 +153,7 @@ public class ObjectGenerator {
      * @param: ClassPool
      * @param: CtClass
      */
-    private void generateBeanToMapProxyFields(Class<?> beanClass, ClassPool pool, CtClass cls) throws Exception {
+    private void generateBeanToMapProxyFields(Class<?> beanClass, CtClass cls) throws Exception {
         CtField beanField = CtField.make(String.format("private %s bean;\n", TypeUtils.getCanonicalName(beanClass)), cls);
         cls.addField(beanField);
         CtField entrySetField = CtField.make("private Set entrySet = new HashSet();\n", cls);
@@ -370,7 +370,7 @@ public class ObjectGenerator {
     private CtClass[] getExceptionClass(ClassPool pool, Method method) throws Exception {
         CtClass[] exceptionClass;
         Class<?>[] exceptionTypes = method.getExceptionTypes();
-        if (exceptionTypes == null || exceptionTypes.length == 0) {
+        if (exceptionTypes.length == 0) {
             exceptionClass = new CtClass[0];
         } else {
             exceptionClass = new CtClass[exceptionTypes.length];
@@ -404,16 +404,16 @@ public class ObjectGenerator {
         String body;
         String returnTypeName = TypeUtils.getCanonicalName(method.getReturnType());
         if (Objects.equals(returnTypeName, "void")) {
-            body = doGenerateLazyLoadMethodStub(targetClass, method, false);
+            body = doGenerateLazyLoadMethodStub(method, false);
         } else {
-            body = doGenerateLazyLoadMethodStub(targetClass, method, true);
+            body = doGenerateLazyLoadMethodStub(method, true);
         }
         sb.append(body);
         sb.append("}");
         return sb.toString();
     }
 
-    private String doGenerateLazyLoadMethodStub(Class<?> targetClass, Method method, boolean haveReturnValue) {
+    private String doGenerateLazyLoadMethodStub(Method method, boolean haveReturnValue) {
         StringBuilder body = new StringBuilder();
         Parameter[] parameters = method.getParameters();
         if (parameters == null || parameters.length == 0) {
@@ -463,9 +463,7 @@ public class ObjectGenerator {
         if (TypeUtils.isMapClass(targetClass)) {
             TypeWrapper genericType = TypeWrappers.getAndResolveGenericType(targetType, 1);
             Class<?> genericCls = genericType.resolveOrObject();
-            Map<Class<?>, TypeValueResolver> resovlerMap = mapResolverCache.computeIfAbsent(genericCls, (key) -> {
-                return new ConcurrentHashMap<>();
-            });
+            Map<Class<?>, TypeValueResolver> resovlerMap = mapResolverCache.computeIfAbsent(genericCls, (key) -> new ConcurrentHashMap<>());
             return resovlerMap.computeIfAbsent(sourceClass, (key) -> {
                 try {
                     ClassPool pool = ClassPool.getDefault();
@@ -474,7 +472,7 @@ public class ObjectGenerator {
                     // 生成类
                     CtClass ctClass = generateMapResolverClass(sourceClass, targetClass, pool);
                     ctClass.getClassFile().setMajorVersion(ClassFile.JAVA_8);
-                    this.generateMapResolveMethodStub(pool, ctClass, sourceClass, targetClass, genericCls, genericType);
+                    this.generateMapResolveMethodStub(ctClass, sourceClass, targetClass, genericType);
                     Class<?> resolverClass = ctClass.toClass();
                     return (TypeValueResolver) resolverClass.newInstance();
                 } catch (Exception e) {
@@ -482,9 +480,7 @@ public class ObjectGenerator {
                 }
             });
         } else if (TypeUtils.isJavaBeanClass(targetClass)) {
-            Map<Class<?>, TypeValueResolver> resovlerMap = javaBeanResolverCache.computeIfAbsent(targetClass, (key) -> {
-                return new ConcurrentHashMap<>();
-            });
+            Map<Class<?>, TypeValueResolver> resovlerMap = javaBeanResolverCache.computeIfAbsent(targetClass, (key) -> new ConcurrentHashMap<>());
             return resovlerMap.computeIfAbsent(sourceClass, (key) -> {
                 try {
                     ClassPool pool = ClassPool.getDefault();
@@ -493,7 +489,7 @@ public class ObjectGenerator {
                     // 生成类
                     CtClass ctClass = generateJavaBeanResolveClass(sourceClass, targetClass, pool);
                     ctClass.getClassFile().setMajorVersion(ClassFile.JAVA_8);
-                    this.generateJavaBeanResolveMethodStub(pool, ctClass, sourceClass, targetType);
+                    this.generateJavaBeanResolveMethodStub(ctClass, sourceClass, targetType);
                     Class<?> resolverClass = ctClass.toClass();
                     return (TypeValueResolver) resolverClass.newInstance();
                 } catch (Exception e) {
@@ -501,9 +497,7 @@ public class ObjectGenerator {
                 }
             });
         } else {
-            Map<Class<?>, TypeValueResolver> resovlerMap = arrayResolverCache.computeIfAbsent(targetClass, (key) -> {
-                return new ConcurrentHashMap<>();
-            });
+            Map<Class<?>, TypeValueResolver> resovlerMap = arrayResolverCache.computeIfAbsent(targetClass, (key) -> new ConcurrentHashMap<>());
             return resovlerMap.computeIfAbsent(sourceClass, (key) -> {
                 try {
                     ClassPool pool = ClassPool.getDefault();
@@ -512,7 +506,7 @@ public class ObjectGenerator {
                     // 生成类
                     CtClass ctClass = this.generateArrayResolverClass(sourceClass, targetClass, pool);
                     ctClass.getClassFile().setMajorVersion(ClassFile.JAVA_8);
-                    this.generateArrayResolveMethodStub(pool, ctClass, sourceClass, targetType);
+                    this.generateArrayResolveMethodStub(ctClass, targetType);
                     Class<?> resolverClass = ctClass.toClass();
                     return (TypeValueResolver) resolverClass.newInstance();
                 } catch (Exception e) {
@@ -529,8 +523,8 @@ public class ObjectGenerator {
         return cls;
     }
 
-    private void generateArrayResolveMethodStub(ClassPool pool, CtClass ctClass, Class<?> sourceClass, TypeWrapper arrayType) throws Exception {
-        CtMethod mapMethod = CtNewMethod.make(this.generateConvertObjectToArrayStub(sourceClass, arrayType), ctClass);
+    private void generateArrayResolveMethodStub(CtClass ctClass, TypeWrapper arrayType) throws Exception {
+        CtMethod mapMethod = CtNewMethod.make(this.generateConvertObjectToArrayStub(arrayType), ctClass);
         ctClass.addMethod(mapMethod);
     }
 
@@ -541,7 +535,7 @@ public class ObjectGenerator {
      * @param: 数组array type
      * @return: String
      */
-    private String generateConvertObjectToArrayStub(Class<?> sourceClass, TypeWrapper arrayType) {
+    private String generateConvertObjectToArrayStub(TypeWrapper arrayType) {
         // 获取数组最终组件类型
         Class<?> compomentClass = TypeWrappers.getAndResolveComponentNonArrayType(arrayType).resolveOrObject();
         // 获取数组维度
@@ -612,7 +606,7 @@ public class ObjectGenerator {
         return cls;
     }
 
-    private void generateMapResolveMethodStub(ClassPool pool, CtClass ctClass, Class<?> sourceType, Class<?> targetCls, Class<?> genericClass, TypeWrapper actualGenericType) throws Exception {
+    private void generateMapResolveMethodStub(CtClass ctClass, Class<?> sourceType, Class<?> targetCls, TypeWrapper actualGenericType) throws Exception {
         CtMethod mapMethod = CtNewMethod.make(this.generateConvertBeanToMapStub(ctClass, sourceType, targetCls, actualGenericType), ctClass);
         ctClass.addMethod(mapMethod);
     }
@@ -653,7 +647,7 @@ public class ObjectGenerator {
             String fieldVarName = generateDefFieldValueVarStub(field);
             FieldWrapper.FieldChainNode invokeNode = sourceClassWrapper.findFieldChainByFieldName(sendFieldName, new HashMap<>());
             String findValueCode = generateFindJavaBeanFieldValueMethodStub(sourceClass, invokeNode, null, sendFieldName);
-            if (StringUtils.isEmpty(findValueCode)) {
+            if (Strings.isNullOrEmpty(findValueCode)) {
                 return;
             }
             try {
@@ -747,10 +741,10 @@ public class ObjectGenerator {
             FieldWrapper leafNode = sourceChainNode.getLeaf();
             AutoBindField autoBindField = leafNode.getAutoBind();
             if (autoBindField != null) {
-                if (!StringUtils.isEmpty(autoBindField.defaultValue())) {
+                if (!Strings.isNullOrEmpty(autoBindField.defaultValue())) {
                     body.append(String.format("value = TypeUtils.getOrDefaultValue(value, \"%s\");\n", autoBindField.defaultValue()));
                 }
-                if (!StringUtils.isEmpty(autoBindField.format())) {
+                if (!Strings.isNullOrEmpty(autoBindField.format())) {
                     body.append(String.format("value = CastUtils.formatDate(value, \"%s\");", autoBindField.format()));
                 }
                 if (autoBindField.scale() > 0) {
@@ -790,10 +784,10 @@ public class ObjectGenerator {
         return cls;
     }
 
-    private void generateJavaBeanResolveMethodStub(ClassPool pool, CtClass ctClass, Class<?> sourceType, TypeWrapper targetType) throws Exception {
+    private void generateJavaBeanResolveMethodStub(CtClass ctClass, Class<?> sourceType, TypeWrapper targetType) throws Exception {
         String methodBody;
         if (TypeUtils.isMapClass(sourceType)) {
-            methodBody = generateConvertMapToBeanStub(ctClass, targetType);
+            methodBody = generateConvertMapToBeanStub(targetType);
         } else {
             methodBody = generateConvertBeanToBeanStub(ctClass, sourceType, targetType);
         }
@@ -811,7 +805,7 @@ public class ObjectGenerator {
      */
     private String generateConvertBeanToBeanStub(CtClass ctClass, Class<?> sourceClass, TypeWrapper targetType) {
         StringBuilder body = new StringBuilder();
-        body.append("public cn.com.hjack.autobind.Result doResolveValue(Object object, TypeWrapper targetType, ResolveConfig config) throws Exception { \n");
+        body.append("public Result doResolveValue(Object object, TypeWrapper targetType, ResolveConfig config) throws Exception { \n");
         body.append("if (object == null) { return DefaultResult.defaultSuccessResult(null); }\n");
         Class<?> targetClass = targetType.resolve();
         ClassWrapper targetClassWrapper = ClassWrapper.forClass(targetClass);
@@ -844,7 +838,7 @@ public class ObjectGenerator {
                 throw new IllegalStateException(e);
             }
             body.append(String.format(GET_SOURCE_VALUE_CODE, varName, targetField.getFieldNmae()));
-            body.append(this.generateConvertFieldOrEntryToFieldStub(varName, chainNode.getLeaf().getFieldType(), targetClass, TypeWrappers.getFieldType(targetField.getField(), targetClass, targetType.resolveVariableContext()), targetField));
+            body.append(generateConvertFieldOrEntryToFieldStub(varName, targetClass, targetField));
         });
         body.append(generateGlobalValidateStub());
         return body.toString();
@@ -878,9 +872,9 @@ public class ObjectGenerator {
      * @param: TypeWrapper
      * @return: String
      */
-    private String generateConvertMapToBeanStub(CtClass ctClass, TypeWrapper typeWrapper) {
+    private String generateConvertMapToBeanStub(TypeWrapper typeWrapper) {
         StringBuilder body = new StringBuilder();
-        body.append("public cn.com.hjack.autobind.Result doResolveValue(Object object, TypeWrapper targetType, ResolveConfig config) throws Exception { \n");
+        body.append("public Result doResolveValue(Object object, TypeWrapper targetType, ResolveConfig config) throws Exception { \n");
         body.append("if (object == null) { return DefaultResult.defaultSuccessResult(null); }\n");
         Class<?> targetClass = typeWrapper.resolve();
         ClassWrapper targetClassWrapper = ClassWrapper.forClass(targetClass);
@@ -905,7 +899,7 @@ public class ObjectGenerator {
             }
             String varName = generateDefFieldValueVarStub(field);
             body.append(String.format("Object %s = (Object) BeanMapper.getValueOrDefault(source, \"%s\", %s, \"%s\");\n", varName, field.getRecvFieldName(), TypeUtils.getCanonicalNameWithSuffix(field.getFieldType()), defaultValue));
-            body.append(generateConvertFieldOrEntryToFieldStub(varName, null, targetClass, TypeWrappers.getFieldType(field.getField(), targetClass, typeWrapper.resolveVariableContext()), field));
+            body.append(generateConvertFieldOrEntryToFieldStub(varName, targetClass, field));
         });
         body.append(generateGlobalValidateStub());
         return body.toString();
@@ -922,12 +916,12 @@ public class ObjectGenerator {
      * @return: 代码桩
      * @throws
      */
-    private String generateConvertFieldOrEntryToFieldStub(String sourceValueVarName, Class<?> sourceFieldClass, Class<?> targetClass, FieldTypeWrapper targetFieldType, FieldWrapper targetField) {
+    private String generateConvertFieldOrEntryToFieldStub(String sourceValueVarName, Class<?> targetClass, FieldWrapper targetField) {
         StringBuilder body = new StringBuilder();
         body.append(String.format("if (%s != null) {\n", sourceValueVarName));
-        body.append(generateDoConvertFieldOrEntryToFieldStub(sourceValueVarName, generateGetSourceClassName(sourceFieldClass, sourceValueVarName), targetClass, targetFieldType, targetField));
+        body.append(generateDoConvertFieldOrEntryToFieldStub(sourceValueVarName, targetClass, targetField));
         FieldWrapper.FieldChainNode invokeNode = ClassWrapper.forClass(targetClass).findFieldChainByFieldName(targetField.getFieldNmae(), new HashMap<>());
-        body.append(genreateFieldTypeAndVarAssignStub(targetField, "childResult.instance()"));
+        body.append(genreateFieldTypeAndVarAssignStub(targetField));
         body.append(String.format(SET_VALUE_CODE, targetField.getWriteMethod().getName(), generateDefFieldValueVarStub(targetField)));
         body.append("if (childResult.success()) {\n");
         // el表达式校验
@@ -942,7 +936,7 @@ public class ObjectGenerator {
         return body.toString();
     }
 
-    private String generateDoConvertFieldOrEntryToFieldStub(String sourceValueVarName, String sourceFieldTypeName, Class<?> targetClass, FieldTypeWrapper targetFieldType, FieldWrapper targetField) {
+    private String generateDoConvertFieldOrEntryToFieldStub(String sourceValueVarName, Class<?> targetClass, FieldWrapper targetField) {
         StringBuilder body = new StringBuilder();
         body.append(String.format(FIND_FIELD_CODE, TypeUtils.getCanonicalNameWithSuffix(targetClass), targetField.getFieldNmae()));
         body.append(String.format(GET_FIELD_TYPE_CODE, "field", TypeUtils.getCanonicalNameWithSuffix(targetClass), "targetType"));
@@ -978,16 +972,16 @@ public class ObjectGenerator {
         return body.toString();
     }
 
-    private String genreateFieldTypeAndVarAssignStub(FieldWrapper field, String valueStr) {
+    private String genreateFieldTypeAndVarAssignStub(FieldWrapper field) {
         StringBuilder body = new StringBuilder();
         if (field.getFieldType().isPrimitive()) {
             String fieldClassName = TypeUtils.getPrimitiveClassWrapName(field.getFieldType());
             String typeAndVarName = this.generateGetTypeAndVarStr(TypeUtils.getCanonicalName(field.getFieldType()), generateDefFieldValueVarStub(field));
-            body.append(String.format("%s = %s", typeAndVarName, String.format(CastUtils_GET_PRIM_CODE, fieldClassName, String.format("(%s) %s", fieldClassName, valueStr))));
+            body.append(String.format("%s = %s", typeAndVarName, String.format(CastUtils_GET_PRIM_CODE, fieldClassName, String.format("(%s) %s", fieldClassName, "childResult.instance()"))));
         } else {
             String fieldClassName = TypeUtils.getCanonicalName(field.getFieldType());
             String typeAndVarName = this.generateGetTypeAndVarStr(fieldClassName, generateDefFieldValueVarStub(field));
-            body.append(String.format("%s = %s;\n", typeAndVarName, String.format("(%s) %s", fieldClassName, valueStr)));
+            body.append(String.format("%s = %s;\n", typeAndVarName, String.format("(%s) %s", fieldClassName, "childResult.instance()")));
         }
         return body.toString();
     }
@@ -1029,9 +1023,9 @@ public class ObjectGenerator {
             return "";
         }
         StringBuilder body = new StringBuilder();
-        if (targetField.getAutoBind() != null && !StringUtils.isEmpty(targetField.getAutoBind().condition())) {
+        if (targetField.getAutoBind() != null && !Strings.isNullOrEmpty(targetField.getAutoBind().condition())) {
             String condition = targetField.getAutoBind().condition();
-            if (!StringUtils.isEmpty(targetField.getAutoBind().errorMsg())) {
+            if (!Strings.isNullOrEmpty(targetField.getAutoBind().errorMsg())) {
                 body.append(String.format(PARSE_EXPRESSION_CODE, condition, String.format(SET_ERROR_RESULT_CODE, Constants.FAIL_CODE, chainNode.getFieldInvokeDesc() + "." + targetField.getAutoBind().errorMsg())));
             } else {
                 body.append(String.format(PARSE_EXPRESSION_CODE, condition, String.format(SET_ERROR_RESULT_CODE, Constants.FAIL_CODE, chainNode.getFieldInvokeDesc() + ".bind error")));
@@ -1041,26 +1035,27 @@ public class ObjectGenerator {
     }
 
     private void generateImportsStub(ClassPool pool) {
-        pool.importPackage("cn.com.hjack.autobind.utils.ClassWrapper");
-        pool.importPackage("cn.com.hjack.autobind.utils.FieldWrapper");
         pool.importPackage("cn.com.hjack.autobind.FieldTypeWrapper");
         pool.importPackage("cn.com.hjack.autobind.TypeValueResolver");
-        pool.importPackage("cn.com.hjack.autobind.MapValueResolver");
-        pool.importPackage("cn.com.hjack.autobind.JavaBeanValueResolver");
-        pool.importPackage("cn.com.hjack.autobind.ArrayValueResolver");
-        pool.importPackage("cn.com.hjack.autobind.generator.ObjectGenerator");
-        pool.importPackage("cn.com.hjack.autobind.binder.TypeWrappers");
-        pool.importPackage("cn.com.hjack.autobind.resolver.TypeValueResolvers");
+        pool.importPackage("cn.com.hjack.autobind.TypeWrapper");
+        pool.importPackage("cn.com.hjack.autobind.ResolveConfig");
+        pool.importPackage("cn.com.hjack.autobind.utils.ClassWrapper");
+        pool.importPackage("cn.com.hjack.autobind.utils.FieldWrapper");
         pool.importPackage("cn.com.hjack.autobind.Result");
-        pool.importPackage("cn.com.hjack.autobind.binder.DefaultResult");
-        pool.importPackage("cn.com.hjack.autobind.resolver.VariableValueResolver");
-        pool.importPackage("cn.com.hjack.autobind.binder.BeanMapper");
-        pool.importPackage("cn.com.hjack.autobind.binder.DefaultValidationErrors");
         pool.importPackage("cn.com.hjack.autobind.utils.TypeUtils");
         pool.importPackage("cn.com.hjack.autobind.utils.CastUtils");
-        pool.importPackage("cn.com.hjack.autobind.TypeWrapper");
-        pool.importPackage("cn.com.hjack.autobind.binder.TypeWrapperImpl");
-        pool.importPackage("cn.com.hjack.autobind.ResolveConfig");
+        pool.importPackage("cn.com.hjack.autobind.resolver.MapValueResolver");
+        pool.importPackage("cn.com.hjack.autobind.resolver.JavaBeanValueResolver");
+        pool.importPackage("cn.com.hjack.autobind.resolver.ArrayValueResolver");
+        pool.importPackage("cn.com.hjack.autobind.resolver.VariableValueResolver");
+        pool.importPackage("cn.com.hjack.autobind.resolver.AbstractTypeValueResolver");
+        pool.importPackage("cn.com.hjack.autobind.generator.ObjectGenerator");
+        pool.importPackage("cn.com.hjack.autobind.factory.TypeWrappers");
+        pool.importPackage("cn.com.hjack.autobind.factory.TypeValueResolvers");
+        pool.importPackage("cn.com.hjack.autobind.validation.DefaultResult");
+        pool.importPackage("cn.com.hjack.autobind.validation.DefaultValidationErrors");
+        pool.importPackage("cn.com.hjack.autobind.mapper.BeanMapper");
+        pool.importPackage("cn.com.hjack.autobind.type.TypeWrapperImpl");
         pool.importPackage("java.util.Map");
         pool.importPackage("java.util.Arrays");
         pool.importPackage("java.util.HashMap");
