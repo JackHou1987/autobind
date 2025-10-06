@@ -70,6 +70,14 @@ public class BeanMapper<T> {
 
     private ResolveConfig config;
 
+    public BeanMapper(T target) {
+        this(target, new HashMap<>(), ResolveConfig.defaultConfig);
+    }
+
+    public BeanMapper(T target, Map<String, TypeWrapper> variableContext) {
+        this(target, variableContext, ResolveConfig.defaultConfig);
+    }
+
     @SuppressWarnings("unchecked")
     public BeanMapper(T target, Map<String, TypeWrapper> variableContext, ResolveConfig config) {
         if (target == null) {
@@ -127,7 +135,6 @@ public class BeanMapper<T> {
     public BeanMapper(TypeReference<T> typeReference) {
         this(typeReference, null);
     }
-
 
     public T getTarget() {
         return target;
