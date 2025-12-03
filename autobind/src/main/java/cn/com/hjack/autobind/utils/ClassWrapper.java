@@ -8,15 +8,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cn.com.hjack.autobind.AutoBindField;
+import cn.com.hjack.autobind.ResolveConfig;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import org.springframework.util.StringUtils;
-
+import com.google.common.base.Strings;
 
 
 /**
@@ -31,11 +33,11 @@ public class ClassWrapper {
     /**
      * key->field name value->field wrapper
      */
-    private Map<String, FieldWrapper> fieldNameMap = new HashMap<>();
+    private Map<String, FieldWrapper> fields = new HashMap<>();
 
-    private Map<String, ClassWrapper> javaBeanFieldNameClassMap = new HashMap<>();
+    private Map<String, ClassWrapper> javaBeanFieldClasses = new HashMap<>();
 
-    private Map<String, FieldWrapper> javaBeanFieldMap = new HashMap<>();
+    private Map<String, FieldWrapper> javaBeanFields = new HashMap<>();
 
     private static Map<Class<?>, ClassWrapper> classCache = new ConcurrentHashMap<>();
 
@@ -45,9 +47,7 @@ public class ClassWrapper {
         if (objectClass == null) {
             throw new IllegalStateException("service class can not be null");
         }
-        return classCache.computeIfAbsent(objectClass, (key) -> {
-            return new ClassWrapper(key);
-        });
+        return classCache.computeIfAbsent(objectClass, ClassWrapper::new);
     }
 
     private ClassWrapper(Class<?> objectClass) {
@@ -60,17 +60,18 @@ public class ClassWrapper {
     }
 
     public Map<String, FieldWrapper> getFieldNameMap() {
-        return fieldNameMap;
+        return fields;
     }
+
     public Map<String, FieldWrapper> getSendFieldNameMap() {
-        if (MapUtils.isEmpty(fieldNameMap)) {
+        if (MapUtils.isEmpty(fields)) {
             return new HashMap<>();
         } else {
             Map<String, FieldWrapper> result = new HashMap<>();
-            fieldNameMap.forEach((fieldName, fieldDesc) -> {
-                Map<String, FieldWrapper> map = fieldDesc.getSendFieldNameMap();
+            fields.forEach((fieldName, fieldWrapper) -> {
+                Map<String, FieldWrapper> map = fieldWrapper.getSendFieldNameMap();
                 if (!MapUtils.isEmpty(map)) {
-                    result.putAll(fieldDesc.getSendFieldNameMap());
+                    result.putAll(fieldWrapper.getSendFieldNameMap());
                 }
             });
             return result;
@@ -78,7 +79,7 @@ public class ClassWrapper {
     }
 
     public Map<String, FieldWrapper> getJavaBeanFieldMap() {
-        return javaBeanFieldMap;
+        return javaBeanFields;
     }
 
     private void initFields(Class<?> beanClass) throws Exception {
@@ -102,21 +103,24 @@ public class ClassWrapper {
                 if (setterMethod == null || getterMethod == null) {
                     return;
                 }
+                AutoBindField autoBind = field.getAnnotation(AutoBindField.class);
+                if (autoBind != null && autoBind.exclude()) {
+                    return;
+                }
                 FieldWrapper fieldWrapper = new FieldWrapper(clsDesc, field, getterMethod, setterMethod);
                 if (TypeUtils.isJavaBeanClass(field.getType())) {
-                    javaBeanFieldNameClassMap.put(field.getName(), ClassWrapper.forClass(field.getType()));
-                    javaBeanFieldMap.put(field.getName(), fieldWrapper);
+                    javaBeanFieldClasses.put(field.getName(), ClassWrapper.forClass(field.getType()));
+                    javaBeanFields.put(field.getName(), fieldWrapper);
                 }
-                fieldNameMap.put(field.getName(),fieldWrapper);
+                fields.put(field.getName(), fieldWrapper);
             }
         });
     }
-
     public Field findField(String fieldName) {
-        if (StringUtils.isEmpty(fieldName)) {
+        if (Strings.isNullOrEmpty(fieldName)) {
             return null;
         } else {
-            FieldWrapper desc = fieldNameMap.get(fieldName);
+            FieldWrapper desc = fields.get(fieldName);
             if (desc == null) {
                 return null;
             } else {
@@ -125,52 +129,59 @@ public class ClassWrapper {
         }
     }
 
-    public FieldWrapper.FieldChainNode findFieldChainByFieldName(String fieldName, Map<Class<?>, Class<?>> javaBeanFieldClass) {
-        if (StringUtils.isEmpty(fieldName)) {
-            return new FieldWrapper.FieldChainNode();
+    public FieldWrapper getField(String fieldName) {
+        if (Strings.isNullOrEmpty(fieldName)) {
+            return null;
         } else {
-            FieldWrapper.FieldChainNode fieldSlot = new FieldWrapper.FieldChainNode();
-            FieldWrapper fieldWrapper = fieldNameMap.get(fieldName);
-            if (fieldWrapper == null) {
-                if (javaBeanFieldNameClassMap == null || javaBeanFieldNameClassMap.isEmpty()) {
-                    return new FieldWrapper.FieldChainNode();
+            return fields.get(fieldName);
+        }
+    }
+    public FieldWrapper.FieldNodeSlot getFieldSlotByFieldName(String fieldName) {
+        return this.getFieldSlotByFieldName(fieldName, new HashMap<>(), ResolveConfig.defaultConfig);
+    }
+
+    public FieldWrapper.FieldNodeSlot getFieldSlotByFieldName(String fieldName, ResolveConfig config) {
+        return this.getFieldSlotByFieldName(fieldName, new HashMap<>(), Optional.ofNullable(config).orElse(ResolveConfig.defaultConfig));
+    }
+
+    private FieldWrapper.FieldNodeSlot getFieldSlotByFieldName(String fieldName, Map<Class<?>, Class<?>> circularDetectClassMap, ResolveConfig config) {
+        if (Strings.isNullOrEmpty(fieldName)) {
+            return new FieldWrapper.FieldNodeSlot();
+        }
+        FieldWrapper.FieldNodeSlot fieldNodeSlot = new FieldWrapper.FieldNodeSlot();
+        FieldWrapper fieldWrapper = fields.get(fieldName);
+        if (fieldWrapper == null) {
+            if (!config.deepSeek()) {
+                return fieldNodeSlot;
+            } else {
+                if (javaBeanFieldClasses == null || javaBeanFieldClasses.isEmpty()) {
+                    return fieldNodeSlot;
                 } else {
-                    Set<Map.Entry<String, ClassWrapper>> entries = javaBeanFieldNameClassMap.entrySet();
+                    Set<Map.Entry<String, ClassWrapper>> entries = javaBeanFieldClasses.entrySet();
                     for (Map.Entry<String, ClassWrapper> entry : entries) {
                         if (entry.getValue() == null || entry.getKey() == null) {
                             continue;
                         }
-                        if (javaBeanFieldClass.get(entry.getValue().getBeanCls()) != null) {
-                            continue;
-                        } else {
-                            javaBeanFieldClass.put(entry.getValue().getBeanCls(), this.getBeanCls());
-                        }
-                        FieldWrapper.FieldChainNode next = entry.getValue().findFieldChainByFieldName(fieldName, javaBeanFieldClass);
-                        if (next != null) {
-                            FieldWrapper current = this.fieldNameMap.get(entry.getKey());
+                        if (circularDetectClassMap.get(entry.getValue().getBeanCls()) == null) {
+                            circularDetectClassMap.put(entry.getValue().getBeanCls(), getBeanCls());
+                            FieldWrapper.FieldNodeSlot next = entry.getValue().getFieldSlotByFieldName(fieldName, circularDetectClassMap, config);
+                            FieldWrapper current = this.fields.get(entry.getKey());
                             if (current == null) {
                                 throw new IllegalStateException("can not find matched field");
                             }
-                            if (current.getAutoBind() != null && current.getAutoBind().exclude()) {
-                                continue;
-                            }
-                            fieldSlot.setCurrent(current);
-                            fieldSlot.setNext(next);
-                            return fieldSlot;
+                            fieldNodeSlot.setCurrent(current);
+                            fieldNodeSlot.setNext(next);
+                            return fieldNodeSlot;
                         }
                     }
-                    return fieldSlot;
+                    return fieldNodeSlot;
                 }
-            } else {
-                if (fieldWrapper.getAutoBind() != null && fieldWrapper.getAutoBind().exclude()) {
-                    return fieldSlot;
-                }
-                fieldSlot.setCurrent(fieldWrapper);
-                return fieldSlot;
             }
+        } else {
+            fieldNodeSlot.setCurrent(fieldWrapper);
+            return fieldNodeSlot;
         }
     }
-
     public Class<?> getBeanCls() {
         return this.objectClass;
     }

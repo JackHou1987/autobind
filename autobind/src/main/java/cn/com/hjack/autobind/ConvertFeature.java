@@ -19,6 +19,9 @@ public enum ConvertFeature {
 
     BASE64_DECODE_MIME,
 
+    /**
+     *  对字符串进行base64
+     */
     BASE64_ENCODE_NORAML,
 
     BASE64_ENCODE_URL,
@@ -70,11 +73,6 @@ public enum ConvertFeature {
      * 开启EL表达式校验
      */
     EL_VALIDATE_ENABLE,
-
-    /**
-     * 关闭java bean到map代理特效
-     */
-    BEAN_TO_MAP_PROXY_DISABLE,
 
     /**
      * 懒加载模式(Collection、Map和java bean中的值不会预先设置，只有当用到其中的方法时才会初始化)

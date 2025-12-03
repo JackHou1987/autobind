@@ -1,6 +1,3 @@
-/**
- *
- */
 package cn.com.hjack.autobind.utils;
 
 import java.lang.reflect.Field;
@@ -11,7 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import cn.com.hjack.autobind.AutoBindField;
-import org.springframework.util.StringUtils;
+
+import com.google.common.base.Strings;
 
 
 
@@ -51,7 +49,7 @@ public class FieldWrapper {
         readMethod = getterMethod;
         writeMethod = setterMethod;
         if (autoBind != null) {
-            if (!StringUtils.isEmpty(autoBind.recvFieldName())) {
+            if (!Strings.isNullOrEmpty(autoBind.recvFieldName())) {
                 recvFieldName = autoBind.recvFieldName();
             } else {
                 recvFieldName = field.getName();
@@ -101,7 +99,6 @@ public class FieldWrapper {
             }, (value) -> {return this;}));
         }
     }
-
     public ClassWrapper getClassWrapper() {
         return declaringClassWrapper;
     }
@@ -110,18 +107,17 @@ public class FieldWrapper {
         return this.field.getType();
     }
 
-    public String getFieldNmae() {
+    public String getFieldName() {
         return this.field.getName();
     }
 
     /**
-     * @ClassName: FieldChainNode
-     * @Description: 字段调用链节点，如java bean中，有field1字段，所属为java bean1，java bean1中有field2字段
-     * 则field1->field2调用链为field1.getField1().getField2()
+     *    字段调用链节点，如java bean中，有field1字段，所属为java bean1，java bean1中有field2字段
+     *    则field1->field2调用链为field1.getField1().getField2()
      * @author houqq
      * @date: 2025年9月3日
      */
-    public static class FieldChainNode {
+    public static class FieldNodeSlot {
 
         /**
          * 调用链当前节点
@@ -131,13 +127,13 @@ public class FieldWrapper {
         /**
          * 调用链下一节点
          */
-        private FieldChainNode next;
+        private FieldNodeSlot next;
 
-        public FieldChainNode getNext() {
+        public FieldNodeSlot getNext() {
             return next;
         }
 
-        public void setNext(FieldChainNode next) {
+        public void setNext(FieldNodeSlot next) {
             this.next = next;
         }
 
@@ -149,7 +145,7 @@ public class FieldWrapper {
             this.current = current;
         }
 
-        public FieldChainNode(FieldWrapper current, FieldChainNode next) {
+        public FieldNodeSlot(FieldWrapper current, FieldNodeSlot next) {
             this.current = current;
             this.next = next;
         }
@@ -159,9 +155,9 @@ public class FieldWrapper {
          * @Description: 调用链叶子节点
          * @return: FieldWrapper
          */
-        public FieldWrapper getLeaf() {
+        public FieldWrapper getLeafNode() {
             if (next != null) {
-                return next.getLeaf();
+                return next.getLeafNode();
             } else {
                 return current;
             }
@@ -176,10 +172,10 @@ public class FieldWrapper {
         public String getFieldInvokeDesc() {
             StringBuilder body = new StringBuilder();
             if (current != null) {
-                body.append(this.current.getFieldNmae());
+                body.append(this.current.getFieldName());
                 if (next != null) {
                     String nextFieldStr = this.next.getFieldInvokeDesc();
-                    if (StringUtils.isEmpty(nextFieldStr)) {
+                    if (Strings.isNullOrEmpty(nextFieldStr)) {
                         return body.toString();
                     } else {
                         body.append("." + nextFieldStr);
@@ -197,7 +193,48 @@ public class FieldWrapper {
             }
         }
 
-        public FieldChainNode() {
+        public String generateInvokeStub(String methodName, String sourceObjectVarName) {
+            if (Strings.isNullOrEmpty(methodName) || Strings.isNullOrEmpty(sourceObjectVarName)) {
+                throw new IllegalStateException("method name or var name can not be null");
+            } else {
+                StringBuilder body = new StringBuilder();
+                body.append(CastUtils.format("private Object %sValue(%s %s) {", methodName, TypeUtils.getCanonicalName(current.getClassWrapper().getBeanCls()), sourceObjectVarName));
+                if (current == null) {
+                    body.append(CastUtils.formatAndIndent2("return null;"));
+                } else {
+                    body.append(this.doGenerateInvokeStub(sourceObjectVarName));
+                }
+                body.append(CastUtils.format("}"));
+                return body.toString();
+            }
+        }
+        private String doGenerateInvokeStub(String sourceObjectVarName) {
+            StringBuilder body = new StringBuilder();
+            if (current.getFieldType().isPrimitive()) {
+                String primitiveTypeName = TypeUtils.getPrimitiveClassWrapName(current.getFieldType());
+                body.append(CastUtils.format("return CastUtils.toWrap%sValue(%s.%s());", primitiveTypeName, sourceObjectVarName, current.getReadMethod().getName()));
+                return body.toString();
+            } else {
+                body.append(CastUtils.format("if (%s == null || %s.%s() == null) {", sourceObjectVarName, sourceObjectVarName, current.getReadMethod().getName()));
+                if (this.current.autoBind != null && !Strings.isNullOrEmpty(this.current.autoBind.defaultValue())) {
+                    body.append(CastUtils.formatAndIndent2("return %s;", current.autoBind.defaultValue()));
+                } else {
+                    body.append(CastUtils.formatAndIndent2("return null;"));
+                }
+                body.append(CastUtils.format("} else {"));
+                body.append(CastUtils.formatAndIndent2("%s %sValue = %s.%s();", TypeUtils.getCanonicalName(current.getFieldType()), current.getFieldName(), sourceObjectVarName, current.getReadMethod().getName()));
+                if (next != null) {
+                    body.append(next.doGenerateInvokeStub(current.getFieldName() + "Value"));
+                } else {
+                    body.append(CastUtils.formatAndIndent2("return %sValue;", current.getFieldName()));
+                }
+                body.append(CastUtils.format("}"));
+                return body.toString();
+            }
+        }
+
+        public FieldNodeSlot() {
         }
     }
+
 }

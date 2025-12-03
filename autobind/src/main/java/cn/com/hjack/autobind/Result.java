@@ -5,21 +5,12 @@ package cn.com.hjack.autobind;
 
 
 /**
- * @ClassName: Result
- * @Description: TODO
+ * {@link cn.com.hjack.autobind.ResolvableConverter#convert}方法返回结果
  * @author houqq
  * @date: 2025年7月21日
- *
  */
 public interface Result<T> {
 
-    /**
-     * @Title: success
-     * @Description: TODO
-     * @param: @return
-     * @return: boolean
-     * @throws
-     */
     boolean success();
 
     T instance();

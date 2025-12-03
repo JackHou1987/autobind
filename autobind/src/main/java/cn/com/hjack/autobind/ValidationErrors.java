@@ -1,14 +1,16 @@
+/**
+ *
+ */
 package cn.com.hjack.autobind;
 
-
+/**
+ * @ClassName: ValidationErrors
+ * @Description: TODO
+ * @author houqq
+ * @date: 2025年10月21日
+ *
+ */
 public interface ValidationErrors {
-    /**
-     * @Title: 收集error信息
-     * @Description: TODO
-     * @param: @param fieldName
-     * @param: @param msg
-     * @return: void
-     * @throws
-     */
+
     void collectError(String fieldName, String msg);
 }

@@ -1,10 +1,10 @@
 package cn.com.hjack.autobind.converters;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.springframework.core.convert.converter.Converter;
 
+import cn.hutool.core.date.DateUtil;
 
 /**
  * @ClassName: DateToStrConverter
@@ -18,8 +18,11 @@ public class DateToStringConverter implements Converter<Date, String> {
 
     @Override
     public String convert(Date source) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
-        return sdf.format(source);
+        if (source == null) {
+            return null;
+        } else {
+            return DateUtil.format(source, DEFAULT_DATE_FORMAT);
+        }
     }
 
 }

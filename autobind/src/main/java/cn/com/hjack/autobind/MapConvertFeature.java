@@ -1,6 +1,18 @@
+/**
+ *
+ */
 package cn.com.hjack.autobind;
 
+
+/**
+ * @ClassName: MapConvertFeature
+ * @Description: TODO
+ * @author houqq
+ * @date: 2025年10月21日
+ *
+ */
 public enum MapConvertFeature {
+
     NOOP,
 
     /**

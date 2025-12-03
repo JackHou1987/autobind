@@ -6,6 +6,7 @@ package cn.com.hjack.autobind.example;
 import cn.com.hjack.autobind.AutoBindField;
 
 import java.math.RoundingMode;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +40,21 @@ public class Source {
 
     private Date src10;
 
-    //	private Map<String, SourceSub> src11;
+//	private Map<String, SourceSub> src11;
 
     private Map<String, Object> src12;
 
     private SourceParent src11;
 
     private List<List<Integer>> src13;
+
+    private String src14;
+
+    private Collection<String> src15;
+
+    private Integer src16;
+
+    private byte src18;
 
     public String getSrc2() {
         return src2;
@@ -192,6 +201,37 @@ public class Source {
         this.src13 = src13;
     }
 
+    public String getSrc14() {
+        return src14;
+    }
+
+    public void setSrc14(String src14) {
+        this.src14 = src14;
+    }
+
+    public Collection<String> getSrc15() {
+        return src15;
+    }
+
+    public void setSrc15(Collection<String> src15) {
+        this.src15 = src15;
+    }
+
+    public Integer getSrc16() {
+        return src16;
+    }
+
+    public void setSrc16(Integer src16) {
+        this.src16 = src16;
+    }
+
+    public byte getSrc18() {
+        return src18;
+    }
+
+    public void setSrc18(byte src18) {
+        this.src18 = src18;
+    }
 
 
 }

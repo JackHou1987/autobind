@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -33,14 +34,15 @@ public class ServiceLoaderUtils {
         } else {
             Set<T> sets = new HashSet<>();
             ServiceLoader<T> serviceLoader = ServiceLoader.load(type);
-            for (T instance : serviceLoader) {
+            Iterator<T> iterator = serviceLoader.iterator();
+            while (iterator.hasNext()) {
+                T instance = iterator.next();
                 sets.add(instance);
             }
             return sets;
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> Set<T> load(Class<T> type, String[] keyNames) {
         if (keyNames == null || keyNames.length == 0 || type == null) {
             return Collections.emptySet();
@@ -56,7 +58,7 @@ public class ServiceLoaderUtils {
                 Set<T> classes = new HashSet<>();
                 for (String result : results) {
                     Class<?> cls = TypeUtils.getClassLoader().loadClass(result);
-                    classes.add((T) cls.newInstance());
+                    classes.add(CastUtils.castSafe(cls.newInstance()));
                 }
                 return classes;
             } catch (Throwable ex) {
@@ -84,13 +86,13 @@ public class ServiceLoaderUtils {
                     } else {
                         continue;
                     }
-                    if (lineKey.isEmpty()) {
+                    if (lineKey.length() == 0) {
                         continue;
                     }
                     if (!Objects.equals(lineKey, keyName)) {
                         continue;
                     }
-                    result.add(line.substring(index + 1));
+                    result.add(line.substring(index + 1, line.length()));
                 }
             }
         }

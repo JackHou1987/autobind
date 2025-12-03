@@ -33,13 +33,14 @@ public class StringToDateConverter implements Converter<String, Date> {
             String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd", "yyyyMMddHHmmss", "HHmmss", "HH:mm:ss"};
             for (String pattern : patterns) {
                 SimpleDateFormat formattter = new SimpleDateFormat(pattern);
-                Date date;
+                Date date = null;
                 try {
                     date = formattter.parse(str);
                     if (date != null) {
                         return date;
                     }
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    continue;
                 }
             }
             throw new IllegalStateException("can not convert str to date");

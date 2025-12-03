@@ -5,27 +5,21 @@ package cn.com.hjack.autobind;
 
 import java.lang.reflect.Type;
 
-
 /**
- * @ClassName: FileTypeWrapper
- * @Description: 封装了一个类字段的type,该字段或者其参数化类型均代表一个FieldTypeWrapper，且其Field type wrapper对象的feild均指向同一个field
+ * 继承{@link cn.com.hjack.autobind.TypeWrapper}，代表一个javabean字段type
  * @author houqq
  * @date: 2025年6月23日
+ * @see cn.com.hjack.autobind.TypeWrapper
  */
 public interface FieldTypeWrapper extends TypeWrapper {
 
     /**
-     * @Title: getFieldTypeClass
-     * @Description: 获取field的实际类型
-     * @return: Class<?>
-     * @throws
+     * 获取field的class类型
      */
     Class<?> getFieldTypeClass();
 
     /**
-     * @Title: getFieldGenericType
-     * @Description: 获取字段的generic type
-     * @return: Type
+     * 获取字段的泛化类型
      */
     Type getFieldGenericType();
 

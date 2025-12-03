@@ -1,26 +1,36 @@
-/**
- *
- */
 package cn.com.hjack.autobind.utils;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import cn.com.hjack.autobind.AutoBindField;
+import cn.com.hjack.autobind.ResolvableConverter;
+import cn.com.hjack.autobind.ResolveConfig;
+import cn.com.hjack.autobind.Result;
+import cn.com.hjack.autobind.binder.TypeWrappers;
+import cn.com.hjack.autobind.converter.ResolvableConverters;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.StringUtils;
+
+import com.google.common.base.Strings;
 
 
 /**
- * @ClassName: CastUtils
- * @Description: TODO
+ *    类型转换工具
  * @author houqq
  * @date: 2025年8月28日
- *
  */
 public class CastUtils {
 
@@ -49,11 +59,56 @@ public class CastUtils {
         return formattter.format((Date) value);
     }
 
+    public static String formatWithNoNewLine(String format, Object... args) {
+        if (Strings.isNullOrEmpty(format)) {
+            return null;
+        } else {
+            if (args == null || args.length == 0) {
+                return format;
+            } else {
+                return String.format(format, args);
+            }
+        }
+    }
+
+    public static String format(String format, Object... args) {
+        if (Strings.isNullOrEmpty(format)) {
+            return null;
+        } else {
+            if (args == null || args.length == 0) {
+                return format + "\n";
+            } else {
+                return String.format(format + "\n", args);
+            }
+        }
+    }
+
+    public static String formatAndIndent2(String format, Object... args) {
+        return "  " + format(format, args);
+    }
+
+    public static String formatAndIndent4(String format, Object... args) {
+        return "    " + format(format, args);
+    }
+
+    public static String formatAndIndent6(String format, Object... args) {
+        return "      " + format(format, args);
+    }
+
+    public static String formatAndIndent8(String format, Object... args) {
+        return "        " + format(format, args);
+    }
+
+    public static String formatAndIndent10(String format, Object... args) {
+        return "          " + format(format, args);
+    }
+
     public static Date parseDateTime(String str) {
         if (StringUtils.isEmpty(str)) {
             return null;
         } else {
-            String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd", "yyyyMMddHHmmss", "HHmmss", "HH:mm:ss"};
+            String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd",
+                    "yyyyMMddHHmmss", "HHmmss", "HH:mm:ss"};
             for (String pattern : patterns) {
                 SimpleDateFormat formattter = new SimpleDateFormat(pattern);
                 Date date = null;
@@ -66,7 +121,69 @@ public class CastUtils {
                     continue;
                 }
             }
-            throw new IllegalStateException("can not convert str to date");
+            return null;
+        }
+    }
+
+    public static LocalDate parseLocalDate(String dateStr) {
+        if (StringUtils.isEmpty(dateStr)) {
+            return null;
+        } else {
+            String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd", "yyyyMMdd", "yyyyMMddHHmmss"};
+            for (String pattern : patterns) {
+                DateTimeFormatter formattter = DateTimeFormatter.ofPattern(pattern);
+                LocalDate localDate = null;
+                try {
+                    localDate = LocalDate.parse(dateStr, formattter);
+                    if (localDate != null) {
+                        return localDate;
+                    }
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+            return null;
+        }
+    }
+    public static LocalTime parseLocalTime(String dateStr) {
+        if (StringUtils.isEmpty(dateStr)) {
+            return null;
+        } else {
+            String[] patterns = new String[] {"HH:mm:ss", "HH:mm", "hh:mma"};
+            for (String pattern : patterns) {
+                DateTimeFormatter formater = DateTimeFormatter.ofPattern(pattern);
+                LocalTime localTime = null;
+                try {
+                    localTime = LocalTime.parse(dateStr, formater);
+                    if (localTime != null) {
+                        return localTime;
+                    }
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+            return null;
+        }
+    }
+
+    public static LocalDateTime parseLocalDateTime(String dateStr) {
+        if (StringUtils.isEmpty(dateStr)) {
+            return null;
+        } else {
+            String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd", "yyyyMMddHHmmss", "HHmmss", "HH:mm:ss"};
+            for (String pattern : patterns) {
+                DateTimeFormatter formattter = DateTimeFormatter.ofPattern(pattern);
+                LocalDateTime localDateTime = null;
+                try {
+                    localDateTime = LocalDateTime.parse(dateStr, formattter);
+                    if (localDateTime != null) {
+                        return localDateTime;
+                    }
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+            return null;
         }
     }
 
@@ -74,13 +191,8 @@ public class CastUtils {
         if (value == null) {
             return 0;
         } else {
-            return value;
+            return value.intValue();
         }
-    }
-
-
-    public static Integer toWrapIntegerValue(int value) {
-        return value;
     }
 
     public static int[] toPrimIntegerArrayValue(Integer[] value) {
@@ -99,28 +211,12 @@ public class CastUtils {
         }
     }
 
-    public static Integer[] toWrapIntegerArrayValue(int[] value) {
-        if (value == null) {
-            return new Integer[0];
-        } else {
-            Integer[] intArray = new Integer[value.length];
-            for (int i = 0; i < value.length; ++i) {
-                intArray[i] = value[i];
-            }
-            return intArray;
-        }
-    }
-
     public static byte toPrimByteValue(Byte value) {
         if (value == null) {
             return 0;
         } else {
-            return value;
+            return value.byteValue();
         }
-    }
-
-    public static Byte toWrapByteValue(byte value) {
-        return value;
     }
 
     public static byte[] toPrimByteArrayValue(Byte[] value) {
@@ -138,6 +234,74 @@ public class CastUtils {
             return bytes;
         }
     }
+    public static char toPrimCharacterValue(Character value) {
+        if (value == null) {
+            return 0;
+        } else {
+            return value.charValue();
+        }
+    }
+
+
+    public static float toPrimFloatValue(Float value) {
+        if (value == null) {
+            return 0f;
+        } else {
+            return value.floatValue();
+        }
+    }
+
+    public static short toPrimShortValue(Short value) {
+        if (value == null) {
+            return 0;
+        } else {
+            return value.shortValue();
+        }
+    }
+
+    public static long toPrimLongValue(Long value) {
+        if (value == null) {
+            return 0;
+        } else {
+            return value.longValue();
+        }
+    }
+
+    public static boolean toPrimBooleanValue(Boolean value) {
+        if (value == null) {
+            return false;
+        } else {
+            return value.booleanValue();
+        }
+    }
+
+    public static double toPrimDoubleValue(Double value) {
+        if (value == null) {
+            return 0d;
+        } else {
+            return value.doubleValue();
+        }
+    }
+
+    public static Integer toWrapIntegerValue(int value) {
+        return Integer.valueOf(value);
+    }
+
+    public static Integer[] toWrapIntegerArrayValue(int[] value) {
+        if (value == null) {
+            return new Integer[0];
+        } else {
+            Integer[] intArray = new Integer[value.length];
+            for (int i = 0; i < value.length; ++i) {
+                intArray[i] = value[i];
+            }
+            return intArray;
+        }
+    }
+
+    public static Byte toWrapByteValue(byte value) {
+        return Byte.valueOf(value);
+    }
 
     public static Byte[] toWrapByteArrayValue(byte[] value) {
         if (value == null) {
@@ -151,76 +315,142 @@ public class CastUtils {
         }
     }
 
-    public static char toPrimCharValue(Character value) {
-        if (value == null) {
-            return 0;
-        } else {
-            return value;
-        }
-    }
 
     public static Character toWrapCharValue(char value) {
-        return value;
+        return Character.valueOf(value);
     }
 
-    public static short toPrimShortValue(Short value) {
-        if (value == null) {
-            return 0;
-        } else {
-            return value;
-        }
-    }
 
     public static Short toWrapShortValue(short value) {
-        return value;
+        return Short.valueOf(value);
     }
 
-    public static long toPrimLongValue(Long value) {
-        if (value == null) {
-            return 0;
-        } else {
-            return value;
-        }
-    }
 
     public static Long toWrapLongValue(long value) {
-        return value;
+        return Long.valueOf(value);
     }
 
-    public static boolean toPrimBooleanValue(Boolean value) {
-        if (value == null) {
-            return false;
-        } else {
-            return value;
-        }
-    }
 
     public static Boolean toWrapBooleanValue(boolean value) {
-        return value;
-    }
-
-    public static double toPrimDoubleValue(Double value) {
-        if (value == null) {
-            return 0d;
-        } else {
-            return value;
-        }
+        return Boolean.valueOf(value);
     }
 
     public static Double toWrapDoubleValue(double value) {
-        return value;
+        return Double.valueOf(value);
     }
 
-    public static float toPrimFloatValue(Float value) {
-        if (value == null) {
-            return 0f;
+
+    public static Float toWrapFloatValue(float value) {
+        return Float.valueOf(value);
+    }
+
+    public static String toHex(Number number) {
+        if (number == null) {
+            return null;
+        } else if (number instanceof Byte
+                || number instanceof Short
+                || number instanceof Integer
+                || number instanceof Long
+                || number instanceof Double
+                || number instanceof Float) {
+            if (number instanceof Long) {
+                return "0x" + Long.toHexString(number.longValue());
+            } else if (number instanceof Double) {
+                return "0x" + Double.toHexString(number.doubleValue());
+            } else if (number instanceof Float) {
+                return "0x" + Float.toHexString(number.floatValue());
+            } else {
+                return "0x" + Integer.toHexString(number.intValue());
+            }
         } else {
-            return value;
+            return null;
         }
     }
 
-    public static Float toWrapFloatValue(float value) {
-        return value;
+    public static String toPlain(Number number) {
+        if (number == null) {
+            return null;
+        } else if (number instanceof Byte
+                || number instanceof Short
+                || number instanceof Integer
+                || number instanceof Long) {
+            return BigDecimal.valueOf(number.longValue()).toPlainString();
+        } else {
+            return BigDecimal.valueOf(number.doubleValue()).toPlainString();
+        }
+    }
+
+    public static String toBinary(Number number) {
+        if (number == null) {
+            return null;
+        } else if (number instanceof Byte
+                || number instanceof Short
+                || number instanceof Integer
+                || number instanceof Long) {
+            if (number instanceof Long) {
+                return Long.toBinaryString(number.longValue());
+            } else {
+                return Integer.toBinaryString(number.intValue());
+            }
+        } else {
+            return null;
+        }
+    }
+    public static String toOctal(Number number) {
+        if (number == null) {
+            return null;
+        } else if (number instanceof Byte
+                || number instanceof Short
+                || number instanceof Integer
+                || number instanceof Long) {
+            if (number instanceof Long) {
+                return "0" + Long.toOctalString(number.longValue());
+            } else {
+                return "0" + Integer.toOctalString(number.intValue());
+            }
+        } else {
+            return null;
+        }
+    }
+
+
+    public static Boolean toBoolean(String value) {
+        if (value == null) {
+            return null;
+        }
+        if (Objects.equals(value, "1")) {
+            return Boolean.TRUE;
+        }
+        if (Objects.equals(value, "0")) {
+            return Boolean.FALSE;
+        } else {
+            return Boolean.valueOf(value);
+        }
+    }
+
+    public static Boolean toBoolean(Number value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.longValue() == 1L) {
+            return Boolean.TRUE;
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+
+    public static Map<String, Object> toMap(Map<?, ?> source) {
+        if (MapUtils.isEmpty(source)) {
+            return new HashMap<>();
+        } else {
+            Map<String, Object> map = new HashMap<>();
+            source.forEach((key, value) -> {
+                map.put(String.valueOf(key), value);
+            });
+            return map;
+        }
+
     }
 
     public static Object setNumberScale(Object value, AutoBindField autoBind) {
@@ -259,7 +489,6 @@ public class CastUtils {
             return value;
         }
     }
-
     public static Object setNumberScale(Number value, int scale, RoundingMode roundingMode) {
         if (value == null || scale < 0) {
             return value;
@@ -283,81 +512,37 @@ public class CastUtils {
         return org.apache.commons.lang3.math.NumberUtils.isCreatable(str);
     }
 
-    public static String toHex(Number number) {
-        if (number == null) {
-            return null;
-        } else if (number instanceof Byte
-                || number instanceof Short
-                || number instanceof Integer
-                || number instanceof Long
-                || number instanceof Double
-                || number instanceof Float) {
-            if (number instanceof Long) {
-                return Long.toHexString(number.longValue());
-            } else if (number instanceof Double) {
-                return Double.toHexString(number.doubleValue());
-            } else if (number instanceof Float) {
-                return Float.toHexString(number.floatValue());
-            } else {
-                return Integer.toHexString(number.intValue());
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public static String toPlain(Number number) {
-        if (number == null) {
-            return null;
-        } else if (number instanceof Byte
-                || number instanceof Short
-                || number instanceof Integer
-                || number instanceof Long) {
-            return BigDecimal.valueOf(number.longValue()).toPlainString();
-        } else {
-            return BigDecimal.valueOf(number.doubleValue()).toPlainString();
-        }
-    }
-
-    public static String toBinary(Number number) {
-        if (number == null) {
-            return null;
-        } else if (number instanceof Byte
-                || number instanceof Short
-                || number instanceof Integer
-                || number instanceof Long) {
-            if (number instanceof Long) {
-                return Long.toBinaryString(number.longValue());
-            } else {
-                return Integer.toBinaryString(number.intValue());
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public static String toOctal(Number number) {
-        if (number == null) {
-            return null;
-        } else if (number instanceof Byte
-                || number instanceof Short
-                || number instanceof Integer
-                || number instanceof Long) {
-            if (number instanceof Long) {
-                return Long.toOctalString(number.longValue());
-            } else {
-                return Integer.toOctalString(number.intValue());
-            }
-        } else {
-            return null;
-        }
-    }
-
     public static String decimalFormat(Number number, String format) {
         if (number == null || StringUtils.isEmpty(format)) {
             return null;
         } else {
             return new DecimalFormat(format).format(number);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T castSafe(Object object) {
+        return (T) object;
+    }
+
+    public static String getDefaultValue(AutoBindField autoBind) {
+        if (autoBind != null) {
+            return autoBind.defaultValue();
+        } else {
+            return null;
+        }
+    }
+    public static String getRecvFieldName(AutoBindField autoBind, Field field) {
+        if (autoBind == null && field == null) {
+            return null;
+        } else if (autoBind == null) {
+            return field.getName();
+        } else {
+            if (!Strings.isNullOrEmpty(autoBind.recvFieldName())) {
+                return autoBind.recvFieldName();
+            } else {
+                return field.getName();
+            }
         }
     }
 
@@ -385,33 +570,56 @@ public class CastUtils {
         }
     }
 
-    public static Boolean toBoolean(String value) {
-        if (value == null) {
-            return null;
-        }
-        if (Objects.equals(value, "1")) {
-            return Boolean.TRUE;
-        }
-        if (Objects.equals(value, "0")) {
-            return Boolean.FALSE;
+    /**
+     * @Title: getParamName
+     * @Description: 返回出参字段名称
+     * @param: autoBind
+     * @param: field
+     * @return: 出参字段名称数组
+     * @throws
+     */
+    public static String[] getSendFieldNames(AutoBindField autoBind, Field field) {
+        if (autoBind != null && autoBind.sendFieldName() != null && autoBind.sendFieldName().length != 0) {
+            return autoBind.sendFieldName();
         } else {
-            return Boolean.valueOf(value);
+            return new String[] {field.getName()};
         }
     }
 
-    public static Boolean toBoolean(Number value) {
-        if (value == null) {
-            return null;
-        }
-        if (value.longValue() == 1L) {
-            return Boolean.TRUE;
+    public static String getDefaultValue(AutoBindField autoBind, String defaultValue) {
+        if (autoBind != null) {
+            return autoBind.defaultValue();
         } else {
-            return Boolean.FALSE;
+            return defaultValue;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T castSafe(Object object) {
-        return (T) object;
+
+    public static Object getFieldValue(Field field, Object instance) {
+        if (field == null) {
+            return null;
+        } else {
+            field.setAccessible(true);
+            try {
+                return field.get(instance);
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
+
+    public static Object convert(Object value, Class<?> targetType) {
+        ResolvableConverter resolver = ResolvableConverters.getConverter(targetType);
+        try {
+            Result<Object> result = resolver.convert(value, TypeWrappers.getType(targetType), ResolveConfig.defaultConfig);
+            if (result == null || !result.success() || result.instance() == null) {
+                return null;
+            } else {
+                return result.instance();
+            }
+        } catch (Exception e) {
+            return value;
+        }
+    }
+
 }
