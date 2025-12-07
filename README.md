@@ -13,8 +13,8 @@
 #### 1. Type Module: 封装了原始java.lang.relect.Type并结合Spring ResolvableType提供各种类型及泛型支持
 #### 2. Converter Module: 提供了用户自定义Converter和内置Converter，支持各种类型自定义转换
 #### 3. Config Module: 提供可配置能力，精细控制转换过程并通过自定义校验器及EL表达式校验提供校验功能
-#### 4. BeanMapper Module: 封装JavaBean对象与JavaBean对象或者JavaBean对象与Map之间转换功能。
-#### 5. Performance Module: 封装了基于字节码生成native code能力，提高性能
+#### 4. BeanMapper Module: 封装JavaBean对象与JavaBean对象或者JavaBean对象与Map之间转换功能
+#### 5. Performance Module: 封装了基于字节码生成native code能力
 
 
 
