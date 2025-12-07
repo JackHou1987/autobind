@@ -15,7 +15,7 @@
 #### 3. Config Module: 提供可配置能力，精细控制转换过程并通过自定义校验器及EL表达式校验提供校验功能
 #### 4. BeanMapper Module: 封装JavaBean对象与JavaBean对象或者JavaBean对象与Map之间转换功能
 #### 5. Performance Module: 封装了基于字节码生成native code能力
-
+#### 6. 提供基础工具能力，支撑上述模块功能
 
 
 
