@@ -18,7 +18,7 @@ import com.google.common.base.Strings;
 
 
 /**
- *   缺省Mapper接口实现，默认通过反射实现类型转换
+ * 缺省Mapper接口实现，默认通过反射实现类型转换
  * @author houqq
  * @date: 2025年11月10日
  */
@@ -108,6 +108,7 @@ public class DefaultBeanMapper<T> extends AbstractBeanMapper<T> {
                 if (value == null && autoBind != null) {
                     String defaultValue = autoBind.defaultValue();
                     if (!Strings.isNullOrEmpty(defaultValue)) {
+                        assert field != null;
                         value = CastUtils.setNumberScale(CastUtils.convert(defaultValue, field.getType()), autoBind);
                         value = CastUtils.formatDate(value, autoBind);
                     }

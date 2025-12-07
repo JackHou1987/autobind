@@ -57,10 +57,10 @@ public class EnumValueResolver extends AbstractResolvableConverter {
 
     private <T> Result<T> findMatchedEnum(Class<?> enumClass, String name) {
         Enum<?>[] enums = (Enum[]) enumClass.getEnumConstants();
-        for (int i = 0; i < enums.length; i++) {
-            String enumName = enums[i].name();
+        for (Enum<?> anEnum : enums) {
+            String enumName = anEnum.name();
             if (Objects.equals(name, enumName)) {
-                return CastUtils.castSafe(DefaultResult.successResult(enums[i]));
+                return CastUtils.castSafe(DefaultResult.successResult(anEnum));
             }
         }
         throw new IllegalStateException("can not convert source to enum, no matched name");

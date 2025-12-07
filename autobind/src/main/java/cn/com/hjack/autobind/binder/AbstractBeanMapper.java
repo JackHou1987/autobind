@@ -125,11 +125,11 @@ public abstract class AbstractBeanMapper<T> implements Mapper<T> {
             return;
         }
         addValidator(new Validator() {
-            ExpressionParser parser = new SpelExpressionParser();
+            final ExpressionParser parser = new SpelExpressionParser();
             @Override
             public void validate(Object t, ValidationErrors errors) {
                 Expression exps = parser.parseExpression(autoBind.condition());
-                if (!exps.getValue(context, Boolean.class)) {
+                if (Boolean.FALSE.equals(exps.getValue(context, Boolean.class))) {
                     if (!Strings.isNullOrEmpty(autoBind.errorMsg())) {
                         errors.collectError(field.getName(), field.getName() + "." + autoBind.errorMsg());
                     } else {
@@ -163,12 +163,7 @@ public abstract class AbstractBeanMapper<T> implements Mapper<T> {
     private List<String> doValidate() {
         List<String> errorMsg = new ArrayList<>();
         if (hasValidator()) {
-            final ValidationErrors validationErrors = new ValidationErrors() {
-                @Override
-                public void collectError(String fieldName, String msg) {
-                    errorMsg.add(msg);
-                }
-            };
+            final ValidationErrors validationErrors = (fieldName, msg) -> errorMsg.add(msg);
             List<Validator> validators = getValidators();
             if (!CollectionUtils.isEmpty(validators)) {
                 validators.stream().filter(Objects::nonNull).forEach(validator -> {
@@ -259,7 +254,7 @@ public abstract class AbstractBeanMapper<T> implements Mapper<T> {
             // map中找不到字段名则递归查找嵌套map中字段名称
             for (Map.Entry<String, Object> entry : entries) {
                 Object value = entry.getValue();
-                if (value != null && value instanceof Map) {
+                if (value instanceof Map) {
                     Object fieldValue = doGetValue(CastUtils.castSafe(value), keyName, deepSeek);
                     if (fieldValue != null) {
                         return fieldValue;
@@ -291,14 +286,11 @@ public abstract class AbstractBeanMapper<T> implements Mapper<T> {
         if (field == null) {
             return;
         }
-        addValidator(new Validator() {
-            @Override
-            public void validate(Object t, ValidationErrors errors) {
-                if (Strings.isNullOrEmpty(resultMsg)) {
-                    errors.collectError(field.getName(), field.getName() + ".bind error");
-                } else {
-                    errors.collectError(field.getName(), field.getName() + "." + resultMsg);
-                }
+        addValidator((t, errors) -> {
+            if (Strings.isNullOrEmpty(resultMsg)) {
+                errors.collectError(field.getName(), field.getName() + ".bind error");
+            } else {
+                errors.collectError(field.getName(), field.getName() + "." + resultMsg);
             }
         });
     }

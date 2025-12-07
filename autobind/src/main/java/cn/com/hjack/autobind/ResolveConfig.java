@@ -1,16 +1,12 @@
 package cn.com.hjack.autobind;
 
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 
 import cn.com.hjack.autobind.utils.CastUtils;
 import com.google.common.base.Strings;
 
-
-
 /**
- *   运行时配置，分为全局配置和单字段配置,当两者都有时,局部配置会覆盖全局配置
+ * 运行时配置，分为全局配置和单字段配置,当两者都有时,局部配置会覆盖全局配置
  * @author houqq
  * @date: 2025年7月4日
  * @see cn.com.hjack.autobind.AutoBindField
@@ -46,8 +42,6 @@ public class ResolveConfig {
     private ConvertFeature[] features = new ConvertFeature[0];
 
     private MapConvertFeature[] mapConvertFeatures = new MapConvertFeature[0];
-
-    private Map<String, Object> attributes = new HashMap<>();
 
     private ResolveConfig() {
     }
@@ -86,7 +80,6 @@ public class ResolveConfig {
         this.validator = config.validator;
         this.customConverter = config.customConverter;
         this.charset = config.charset;
-        this.attributes.putAll(config.attributes);
         this.deepSeek = config.deepSeek;
     }
 
@@ -98,9 +91,8 @@ public class ResolveConfig {
         ResolveConfig config = this.copy();
         if (cls != null && cls != Void.class) {
             try {
-                Converter<?, ?> converter = (Converter<?, ?>) cls.newInstance();
-                config.customConverter = converter;
-            } catch (Exception e) {
+                config.customConverter = (Converter<?, ?>) cls.newInstance();
+            } catch (Exception ignored) {
             }
         }
         return config;
@@ -255,11 +247,10 @@ public class ResolveConfig {
 
     public ResolveConfig convertFeature(ConvertFeature... features) {
         ResolveConfig config = this.copy();
-        ConvertFeature[] featureArray = features;
-        if (featureArray != null && featureArray.length != 0) {
-            ConvertFeature[] convertFeatures = new ConvertFeature[config.features.length + featureArray.length];
+        if (features != null && features.length != 0) {
+            ConvertFeature[] convertFeatures = new ConvertFeature[config.features.length + features.length];
             System.arraycopy(config.features, 0, convertFeatures, 0, config.features.length);
-            System.arraycopy(featureArray, 0, convertFeatures, config.features.length, featureArray.length);
+            System.arraycopy(features, 0, convertFeatures, config.features.length, features.length);
             config.features = convertFeatures;
         }
         return config;
@@ -275,11 +266,10 @@ public class ResolveConfig {
 
     public ResolveConfig mapConvertFeature(MapConvertFeature... features) {
         ResolveConfig config = this.copy();
-        MapConvertFeature[] featureArray = features;
-        if (featureArray != null && featureArray.length != 0) {
-            MapConvertFeature[] convertFeatures = new MapConvertFeature[config.features.length + featureArray.length];
+        if (features != null && features.length != 0) {
+            MapConvertFeature[] convertFeatures = new MapConvertFeature[config.features.length + features.length];
             System.arraycopy(config.mapConvertFeatures, 0, convertFeatures, 0, config.features.length);
-            System.arraycopy(featureArray, 0, convertFeatures, config.features.length, featureArray.length);
+            System.arraycopy(features, 0, convertFeatures, config.features.length, features.length);
             config.mapConvertFeatures = convertFeatures;
         }
         return config;

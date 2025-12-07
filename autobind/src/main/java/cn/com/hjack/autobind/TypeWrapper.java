@@ -23,7 +23,7 @@ public interface TypeWrapper {
 
     /**
      * 获取当前类型的参数化类型
-     * @param 参数化类型索引
+     * @param index 参数化类型索引
      * @return 参数化类型
      */
     TypeWrapper getGeneric(int index);

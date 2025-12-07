@@ -16,6 +16,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -103,7 +104,7 @@ public class DateValueResolver extends AbstractResolvableConverter {
 
     private void registerToInstantConverters() {
         registerInternalConverter(String.class, Instant.class, (value, config) -> {
-            return CastUtils.parseDateTime(value).toInstant();
+            return Objects.requireNonNull(CastUtils.parseDateTime(value)).toInstant();
         });
         registerInternalConverter(Instant.class, Instant.class, (value, config) -> {
             return value;
@@ -137,7 +138,7 @@ public class DateValueResolver extends AbstractResolvableConverter {
     private void registerToCalendarConverters() {
         registerInternalConverter(String.class, Calendar.class, (value, config) -> {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(CastUtils.parseDateTime(value));
+            calendar.setTime(Objects.requireNonNull(CastUtils.parseDateTime(value)));
             return calendar;
         });
         registerInternalConverter(Instant.class, Calendar.class, (value, config) -> {

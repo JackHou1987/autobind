@@ -14,11 +14,8 @@ import javassist.bytecode.ClassFile;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-
-
 /**
- *   数组resolver生成器
+ * 数组resolver生成器
  * @author houqq
  * @date: 2025年10月31日
  *
@@ -64,7 +61,7 @@ public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
                 // 生成类
                 CtClass ctClass = this.generateArrayResolverClass(pool, sourceClass, targetClass);
                 ctClass.getClassFile().setMajorVersion(ClassFile.JAVA_8);
-                this.generateArrayResolveMethodStub(ctClass, sourceClass, targetType);
+                this.generateArrayResolveMethodStub(ctClass, targetType);
                 Class<?> resolverClass = ctClass.toClass();
                 return (ResolvableConverter) resolverClass.newInstance();
             } catch (Exception e) {
@@ -78,8 +75,8 @@ public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
         cls.setSuperclass(pool.get("cn.com.hjack.autobind.converter.AbstractResolvableConverter"));
         return cls;
     }
-    private void generateArrayResolveMethodStub(CtClass ctClass, Class<?> sourceClass, TypeWrapper arrayType) throws Exception {
-        ctClass.addMethod(CtNewMethod.make(generateObjectToArrayStub(sourceClass, arrayType), ctClass));
+    private void generateArrayResolveMethodStub(CtClass ctClass, TypeWrapper arrayType) throws Exception {
+        ctClass.addMethod(CtNewMethod.make(generateObjectToArrayStub(arrayType), ctClass));
     }
 
     /**
@@ -89,7 +86,7 @@ public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
      * @param: 数组array type
      * @return: String
      */
-    private String generateObjectToArrayStub(Class<?> sourceClass, TypeWrapper arrayType) {
+    private String generateObjectToArrayStub(TypeWrapper arrayType) {
         // 获取数组最终组件类型
         Class<?> compomentClass = TypeWrappers.getAndResolveComponentNonArrayType(arrayType).resolveOrObject();
         // 获取数组维度
@@ -139,9 +136,7 @@ public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
     }
 
     private String generateErrorResultStub(Class<?> compomentClass, int dimension) {
-        StringBuilder body = new StringBuilder();
-        body.append(CastUtils.formatWithNoNewLine("return DefaultResult.errorResult(new %s[source.size()]%s, %s);", TypeUtils.getCanonicalName(compomentClass), TypeUtils.getArrayBracketDesc(dimension - 1, ""), "childResult.resultMsg()"));
-        return body.toString();
+        return CastUtils.formatWithNoNewLine("return DefaultResult.errorResult(new %s[source.size()]%s, %s);", TypeUtils.getCanonicalName(compomentClass), TypeUtils.getArrayBracketDesc(dimension - 1, ""), "childResult.resultMsg()");
     }
     private void generateImportsStub(ClassPool pool) {
         pool.importPackage("cn.com.hjack.autobind.ResolvableConverter");

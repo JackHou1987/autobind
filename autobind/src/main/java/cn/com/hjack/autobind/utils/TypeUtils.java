@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Strings;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ReflectionUtils;
@@ -99,14 +100,7 @@ public class TypeUtils {
                         continue;
                     }
                 }
-            } else if (interfaceType instanceof Class) {
-                Class<?> interfaceClass = (Class<?>) interfaceType;
-                if (interfaceClass == baseClass) {
-                    return interfaceType;
-                }
-            } else {
-                continue;
-            }
+            } 
         }
         Type superType = null;
         Type genericSuperType = implClass.getGenericSuperclass();
@@ -144,10 +138,10 @@ public class TypeUtils {
      * @return: Object
      */
     public static Object getOrDefaultValue(Object value, String defaultValue) {
-        if (StringUtils.isEmpty(defaultValue)) {
+        if (Strings.isNullOrEmpty(defaultValue)) {
             return value;
         }
-        if (value == null && !StringUtils.isEmpty(defaultValue)) {
+        if (value == null && !Strings.isNullOrEmpty(defaultValue)) {
             return defaultValue;
         } else {
             return value;
@@ -218,7 +212,6 @@ public class TypeUtils {
                         Method setterMethod = ClassUtils.findSetterMethod(field);
                         if (getterMethod != null && setterMethod != null) {
                             found.set(true);
-                            return;
                         }
                     }
                 });
@@ -273,7 +266,7 @@ public class TypeUtils {
     }
 
     public static boolean isNumber(String str) {
-        if (StringUtils.isEmpty(str)) {
+        if (Strings.isNullOrEmpty(str)) {
             return false;
         } else {
             char[] chrs = str.toCharArray();
@@ -535,7 +528,7 @@ public class TypeUtils {
      * @return: 获取数组全限定名称
      */
     public static String getArrayCanonicalName(String prefix, int dimension, String index) {
-        if (StringUtils.isEmpty(prefix) || dimension < 0) {
+        if (Strings.isNullOrEmpty(prefix) || dimension < 0) {
             return null;
         }
         if (dimension == 0) {
@@ -598,10 +591,10 @@ public class TypeUtils {
             return "";
         } else {
             StringBuilder str = new StringBuilder();
-            if (StringUtils.isEmpty(index)) {
+            if (Strings.isNullOrEmpty(index)) {
                 str.append("[]");
             } else {
-                str.append("[" + index + "]");
+                str.append("[").append(index).append("]");
             }
             return getArrayBracketDesc(str.toString(), --dimension);
         }
@@ -649,7 +642,7 @@ public class TypeUtils {
      * @return: get method
      */
     public static Method findGetterMethod(Field field) {
-        String getterMethodName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1, field.getName().length());
+        String getterMethodName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
         try {
             return ReflectionUtils.findMethod(field.getDeclaringClass(), getterMethodName);
         } catch (Exception e) {
@@ -664,13 +657,11 @@ public class TypeUtils {
      * @return: get method
      */
     public static Method findSetterMethod(Field field) {
-        String setterMethodName = "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1, field.getName().length());
+        String setterMethodName = "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
         try {
             return ReflectionUtils.findMethod(field.getDeclaringClass(), setterMethodName, field.getType());
         } catch (Exception e) {
             return null;
         }
     }
-
-
 }

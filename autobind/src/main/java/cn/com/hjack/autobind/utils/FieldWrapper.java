@@ -178,7 +178,7 @@ public class FieldWrapper {
                     if (Strings.isNullOrEmpty(nextFieldStr)) {
                         return body.toString();
                     } else {
-                        body.append("." + nextFieldStr);
+                        body.append(".").append(nextFieldStr);
                         return body.toString();
                     }
                 } else {

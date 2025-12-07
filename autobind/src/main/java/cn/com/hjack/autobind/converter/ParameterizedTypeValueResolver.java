@@ -102,9 +102,8 @@ public class ParameterizedTypeValueResolver extends AbstractResolvableConverter 
                         if (source instanceof Collection) {
                             Stream.Builder<Object> builder = Stream.builder();
                             Collection<Object> coll = CastUtils.castSafe(source);
-                            Iterator<Object> iter = coll.iterator();
-                            while (iter.hasNext()) {
-                                Result<Object> childResult = converter.convert(iter.next(), genericType, config);
+                            for (Object o : coll) {
+                                Result<Object> childResult = converter.convert(o, genericType, config);
                                 if (!childResult.success()) {
                                     throw new IllegalStateException(childResult.resultMsg());
                                 } else {

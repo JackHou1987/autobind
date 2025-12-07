@@ -52,10 +52,8 @@ public class LazyLoadProxyGenerater implements Generater<Object> {
                 generateLazyLoadProxyFields(targetClass, pool, ctClass);
                 generateLazyLoadProxyConstructs(pool, targetClass, ctClass);
                 Method[] methods = targetClass.getDeclaredMethods();
-                if (methods != null && methods.length != 0) {
-                    for (Method method : methods) {
-                        generateLazyLoadProxyMethod(pool, ctClass, targetClass, method);
-                    }
+                for (Method method : methods) {
+                    generateLazyLoadProxyMethod(pool, ctClass, targetClass, method);
                 }
                 Class<?> objCls = ctClass.toClass();
                 Constructor<?> constructor = objCls.getConstructor(Supplier.class);
@@ -90,19 +88,17 @@ public class LazyLoadProxyGenerater implements Generater<Object> {
 
     private void generateLazyLoadProxyConstructs(ClassPool pool, Class<?> targetClass, CtClass cls) throws Exception {
         CtConstructor constructor = new CtConstructor(new CtClass[] {pool.get("java.util.function.Supplier")}, cls);
-        constructor.setBody(generateLazyLoadProxyConstructContentStub(targetClass));
+        constructor.setBody(generateLazyLoadProxyConstructContentStub());
         cls.addConstructor(constructor);
     }
 
-    private String generateLazyLoadProxyConstructContentStub(Class<?> targetClass) {
-        StringBuilder body = new StringBuilder();
-        body.append(CastUtils.format("{"));
-        body.append(CastUtils.formatAndIndent2("if ($1 == null) {"));
-        body.append(CastUtils.formatAndIndent4("throw new IllegalStateException(\"supplier can not be null\");"));
-        body.append(CastUtils.formatAndIndent2("}"));
-        body.append(CastUtils.formatAndIndent2("this.supplier = $1;"));
-        body.append(CastUtils.format("}"));
-        return body.toString();
+    private String generateLazyLoadProxyConstructContentStub() {
+        return CastUtils.format("{") +
+                CastUtils.formatAndIndent2("if ($1 == null) {") +
+                CastUtils.formatAndIndent4("throw new IllegalStateException(\"supplier can not be null\");") +
+                CastUtils.formatAndIndent2("}") +
+                CastUtils.formatAndIndent2("this.supplier = $1;") +
+                CastUtils.format("}");
     }
 
     private void generateLazyLoadProxyMethod(ClassPool pool, CtClass cls, Class<?> targetClass, Method method) throws Exception {
@@ -134,16 +130,16 @@ public class LazyLoadProxyGenerater implements Generater<Object> {
         String body;
         String returnTypeName = TypeUtils.getCanonicalName(method.getReturnType());
         if (Objects.equals(returnTypeName, "void")) {
-            body = doGenerateLazyLoadMethodStub(targetClass, method, false);
+            body = doGenerateLazyLoadMethodStub(method, false);
         } else {
-            body = doGenerateLazyLoadMethodStub(targetClass, method, true);
+            body = doGenerateLazyLoadMethodStub(method, true);
         }
         sb.append(body);
         sb.append(CastUtils.format("}"));
         return sb.toString();
     }
 
-    private String doGenerateLazyLoadMethodStub(Class<?> targetClass, Method method, boolean haveReturnValue) {
+    private String doGenerateLazyLoadMethodStub(Method method, boolean haveReturnValue) {
         StringBuilder body = new StringBuilder();
         Parameter[] parameters = method.getParameters();
         if (parameters == null || parameters.length == 0) {
@@ -195,7 +191,7 @@ public class LazyLoadProxyGenerater implements Generater<Object> {
     private CtClass[] getExceptionClass(ClassPool pool, Method method) throws Exception {
         CtClass[] exceptionClass;
         Class<?>[] exceptionTypes = method.getExceptionTypes();
-        if (exceptionTypes == null || exceptionTypes.length == 0) {
+        if (exceptionTypes.length == 0) {
             exceptionClass = new CtClass[0];
         } else {
             exceptionClass = new CtClass[exceptionTypes.length];

@@ -84,36 +84,33 @@ public class ClassWrapper {
 
     private void initFields(Class<?> beanClass) throws Exception {
         ClassWrapper clsDesc = this;
-        ReflectionUtils.doWithFields(beanClass, new FieldCallback() {
-            @Override
-            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-                if (Modifier.isStatic(field.getModifiers())) {
-                    return;
-                }
-                String getterMethodName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
-                String setterMethodName = "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
-                Method setterMethod = null;
-                Method getterMethod = null;
-                try {
-                    setterMethod = ReflectionUtils.findMethod(beanClass, setterMethodName, field.getType());
-                    getterMethod = ReflectionUtils.findMethod(beanClass, getterMethodName);
-                } catch (Exception e) {
-                    return;
-                }
-                if (setterMethod == null || getterMethod == null) {
-                    return;
-                }
-                AutoBindField autoBind = field.getAnnotation(AutoBindField.class);
-                if (autoBind != null && autoBind.exclude()) {
-                    return;
-                }
-                FieldWrapper fieldWrapper = new FieldWrapper(clsDesc, field, getterMethod, setterMethod);
-                if (TypeUtils.isJavaBeanClass(field.getType())) {
-                    javaBeanFieldClasses.put(field.getName(), ClassWrapper.forClass(field.getType()));
-                    javaBeanFields.put(field.getName(), fieldWrapper);
-                }
-                fields.put(field.getName(), fieldWrapper);
+        ReflectionUtils.doWithFields(beanClass, field -> {
+            if (Modifier.isStatic(field.getModifiers())) {
+                return;
             }
+            String getterMethodName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
+            String setterMethodName = "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
+            Method setterMethod = null;
+            Method getterMethod = null;
+            try {
+                setterMethod = ReflectionUtils.findMethod(beanClass, setterMethodName, field.getType());
+                getterMethod = ReflectionUtils.findMethod(beanClass, getterMethodName);
+            } catch (Exception e) {
+                return;
+            }
+            if (setterMethod == null || getterMethod == null) {
+                return;
+            }
+            AutoBindField autoBind = field.getAnnotation(AutoBindField.class);
+            if (autoBind != null && autoBind.exclude()) {
+                return;
+            }
+            FieldWrapper fieldWrapper = new FieldWrapper(clsDesc, field, getterMethod, setterMethod);
+            if (TypeUtils.isJavaBeanClass(field.getType())) {
+                javaBeanFieldClasses.put(field.getName(), ClassWrapper.forClass(field.getType()));
+                javaBeanFields.put(field.getName(), fieldWrapper);
+            }
+            fields.put(field.getName(), fieldWrapper);
         });
     }
     public Field findField(String fieldName) {

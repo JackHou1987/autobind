@@ -22,7 +22,6 @@ import cn.com.hjack.autobind.Result;
 import cn.com.hjack.autobind.binder.TypeWrappers;
 import cn.com.hjack.autobind.converter.ResolvableConverters;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.util.StringUtils;
 
 import com.google.common.base.Strings;
 
@@ -38,7 +37,7 @@ public class CastUtils {
         if (autoBind == null || value == null) {
             return value;
         }
-        if (StringUtils.isEmpty(autoBind.format())) {
+        if (Strings.isNullOrEmpty(autoBind.format())) {
             return value;
         }
         if (!(value instanceof Date)) {
@@ -49,7 +48,7 @@ public class CastUtils {
     }
 
     public static Object formatDate(Object value, String format) {
-        if (StringUtils.isEmpty(format) || value == null) {
+        if (Strings.isNullOrEmpty(format) || value == null) {
             return value;
         }
         if (!(value instanceof Date)) {
@@ -104,7 +103,7 @@ public class CastUtils {
     }
 
     public static Date parseDateTime(String str) {
-        if (StringUtils.isEmpty(str)) {
+        if (Strings.isNullOrEmpty(str)) {
             return null;
         } else {
             String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd",
@@ -126,7 +125,7 @@ public class CastUtils {
     }
 
     public static LocalDate parseLocalDate(String dateStr) {
-        if (StringUtils.isEmpty(dateStr)) {
+        if (Strings.isNullOrEmpty(dateStr)) {
             return null;
         } else {
             String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd", "yyyyMMdd", "yyyyMMddHHmmss"};
@@ -146,20 +145,15 @@ public class CastUtils {
         }
     }
     public static LocalTime parseLocalTime(String dateStr) {
-        if (StringUtils.isEmpty(dateStr)) {
+        if (Strings.isNullOrEmpty(dateStr)) {
             return null;
         } else {
             String[] patterns = new String[] {"HH:mm:ss", "HH:mm", "hh:mma"};
             for (String pattern : patterns) {
                 DateTimeFormatter formater = DateTimeFormatter.ofPattern(pattern);
-                LocalTime localTime = null;
                 try {
-                    localTime = LocalTime.parse(dateStr, formater);
-                    if (localTime != null) {
-                        return localTime;
-                    }
-                } catch (Exception e) {
-                    continue;
+                    return LocalTime.parse(dateStr, formater);
+                } catch (Exception ignored) {
                 }
             }
             return null;
@@ -167,20 +161,15 @@ public class CastUtils {
     }
 
     public static LocalDateTime parseLocalDateTime(String dateStr) {
-        if (StringUtils.isEmpty(dateStr)) {
+        if (Strings.isNullOrEmpty(dateStr)) {
             return null;
         } else {
             String[] patterns = new String[] {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyyMMdd", "yyyyMMddHHmmss", "HHmmss", "HH:mm:ss"};
             for (String pattern : patterns) {
                 DateTimeFormatter formattter = DateTimeFormatter.ofPattern(pattern);
-                LocalDateTime localDateTime = null;
                 try {
-                    localDateTime = LocalDateTime.parse(dateStr, formattter);
-                    if (localDateTime != null) {
-                        return localDateTime;
-                    }
-                } catch (Exception e) {
-                    continue;
+                    return LocalDateTime.parse(dateStr, formattter);
+                } catch (Exception ignored) {
                 }
             }
             return null;
@@ -191,7 +180,7 @@ public class CastUtils {
         if (value == null) {
             return 0;
         } else {
-            return value.intValue();
+            return value;
         }
     }
 
@@ -215,7 +204,7 @@ public class CastUtils {
         if (value == null) {
             return 0;
         } else {
-            return value.byteValue();
+            return value;
         }
     }
 
@@ -238,7 +227,7 @@ public class CastUtils {
         if (value == null) {
             return 0;
         } else {
-            return value.charValue();
+            return value;
         }
     }
 
@@ -247,7 +236,7 @@ public class CastUtils {
         if (value == null) {
             return 0f;
         } else {
-            return value.floatValue();
+            return value;
         }
     }
 
@@ -255,7 +244,7 @@ public class CastUtils {
         if (value == null) {
             return 0;
         } else {
-            return value.shortValue();
+            return value;
         }
     }
 
@@ -263,7 +252,7 @@ public class CastUtils {
         if (value == null) {
             return 0;
         } else {
-            return value.longValue();
+            return value;
         }
     }
 
@@ -271,7 +260,7 @@ public class CastUtils {
         if (value == null) {
             return false;
         } else {
-            return value.booleanValue();
+            return value;
         }
     }
 
@@ -279,12 +268,12 @@ public class CastUtils {
         if (value == null) {
             return 0d;
         } else {
-            return value.doubleValue();
+            return value;
         }
     }
 
     public static Integer toWrapIntegerValue(int value) {
-        return Integer.valueOf(value);
+        return value;
     }
 
     public static Integer[] toWrapIntegerArrayValue(int[] value) {
@@ -300,7 +289,7 @@ public class CastUtils {
     }
 
     public static Byte toWrapByteValue(byte value) {
-        return Byte.valueOf(value);
+        return value;
     }
 
     public static Byte[] toWrapByteArrayValue(byte[] value) {
@@ -317,31 +306,31 @@ public class CastUtils {
 
 
     public static Character toWrapCharValue(char value) {
-        return Character.valueOf(value);
+        return value;
     }
 
 
     public static Short toWrapShortValue(short value) {
-        return Short.valueOf(value);
+        return value;
     }
 
 
     public static Long toWrapLongValue(long value) {
-        return Long.valueOf(value);
+        return value;
     }
 
 
     public static Boolean toWrapBooleanValue(boolean value) {
-        return Boolean.valueOf(value);
+        return value;
     }
 
     public static Double toWrapDoubleValue(double value) {
-        return Double.valueOf(value);
+        return value;
     }
 
 
     public static Float toWrapFloatValue(float value) {
-        return Float.valueOf(value);
+        return value;
     }
 
     public static String toHex(Number number) {
@@ -513,7 +502,7 @@ public class CastUtils {
     }
 
     public static String decimalFormat(Number number, String format) {
-        if (number == null || StringUtils.isEmpty(format)) {
+        if (number == null || Strings.isNullOrEmpty(format)) {
             return null;
         } else {
             return new DecimalFormat(format).format(number);
@@ -576,7 +565,6 @@ public class CastUtils {
      * @param: autoBind
      * @param: field
      * @return: 出参字段名称数组
-     * @throws
      */
     public static String[] getSendFieldNames(AutoBindField autoBind, Field field) {
         if (autoBind != null && autoBind.sendFieldName() != null && autoBind.sendFieldName().length != 0) {

@@ -26,12 +26,8 @@ public class ConverterProvider {
             TypeWrapper typeWrapper = TypeWrappers.getType(converter.getClass());
             Class<?> sourceClass = typeWrapper.getGeneric(0).resolveOrObject();
             Class<?> targetClass = typeWrapper.getGeneric(1).resolveOrObject();
-            Map<Class<?>, Converter<?, ?>> targetConverterMap = converterMap.computeIfAbsent(sourceClass, (key) -> {
-                return new HashMap<>();
-            });
-            targetConverterMap.computeIfAbsent(targetClass, (key) -> {
-                return converter;
-            });
+            Map<Class<?>, Converter<?, ?>> targetConverterMap = converterMap.computeIfAbsent(sourceClass, (key) -> new HashMap<>());
+            targetConverterMap.computeIfAbsent(targetClass, (key) -> converter);
         });
     }
 

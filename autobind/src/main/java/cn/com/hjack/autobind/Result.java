@@ -3,7 +3,6 @@
  */
 package cn.com.hjack.autobind;
 
-
 /**
  * {@link cn.com.hjack.autobind.ResolvableConverter#convert}方法返回结果
  * @author houqq

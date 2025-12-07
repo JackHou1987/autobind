@@ -135,27 +135,23 @@ public class MapperGenerater implements Generater<Mapper<?>> {
     }
 
     private String generateConstructBodyStub() {
-        StringBuilder body = new StringBuilder();
-        body.append(CastUtils.format("{"));
-        body.append(CastUtils.formatAndIndent2("super($1, $2, $3);"));
-        body.append(CastUtils.format("}"));
-        return body.toString();
+        return CastUtils.format("{") +
+                CastUtils.formatAndIndent2("super($1, $2, $3);") +
+                CastUtils.format("}");
     }
 
     private void generateBeanToBeanMethodStub(CtClass ctClass) {
         Map<String, FieldWrapper> fieldNameMap = classWrapper.getFieldNameMap();
         generateToBean4BeanMethodStub(ctClass, fieldNameMap);
-        generateMethod(generateBeanToBeanMethodBodyStub(ctClass, fieldNameMap), ctClass);
+        generateMethod(generateBeanToBeanMethodBodyStub(), ctClass);
     }
 
-    private String generateBeanToBeanMethodBodyStub(CtClass ctClass, Map<String, FieldWrapper> fieldNameMap) {
-        StringBuilder body = new StringBuilder();
+    private String generateBeanToBeanMethodBodyStub() {
         // 如果chain node为空,且目标字段为java bean，则将source java bean转为map返回
-        body.append(CastUtils.format("public Result beanToBean(Object source, Validator validator) {"));
-        body.append(CastUtils.formatAndIndent2("toBean4Bean(source, validator);"));
-        body.append(CastUtils.formatAndIndent2("return super.validate();"));
-        body.append(CastUtils.format("}"));
-        return body.toString();
+        return CastUtils.format("public Result beanToBean(Object source, Validator validator) {") +
+                CastUtils.formatAndIndent2("toBean4Bean(source, validator);") +
+                CastUtils.formatAndIndent2("return super.validate();") +
+                CastUtils.format("}");
     }
 
     private void generateGatValue4BeanMethodStub(CtClass ctClass, Map<String, FieldWrapper> fieldNameMap) {
@@ -218,10 +214,10 @@ public class MapperGenerater implements Generater<Mapper<?>> {
     }
 
     private void generateBeanToMapMethodStub(CtClass ctClass) {
-        generateMethod(generateBeanToMapMethodBodyStub("", sourceClass, ctClass), ctClass);
+        generateMethod(generateBeanToMapMethodBodyStub("", sourceClass), ctClass);
         generateMethod(generateBeanToMapMethodBodyStub(), ctClass);
     }
-    private String generateBeanToMapMethodBodyStub(String methodName, Class<?> beanClass, CtClass ctClass) {
+    private String generateBeanToMapMethodBodyStub(String methodName, Class<?> beanClass) {
         StringBuilder body = new StringBuilder();
         Map<String, FieldWrapper> fields = ClassWrapper.forClass(beanClass).getFieldNameMap();
         if (MapUtils.isEmpty(fields)) {
@@ -238,7 +234,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
                         || TypeUtils.isMapClass(fieldType)
                         || TypeUtils.isArrayClass(fieldType)) {
                     String[] sendFieldNames = CastUtils.getSendFieldNames(field.getAutoBind(), field.getField());
-                    if (sendFieldNames != null && sendFieldNames.length != 0) {
+                    if (sendFieldNames != null) {
                         for (String sendFieldName : sendFieldNames) {
                             body.append(CastUtils.formatAndIndent2("map.put(\"%s\", source.%s());", sendFieldName,
                                     field.getReadMethod().getName()));
@@ -246,7 +242,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
                     }
                 } else if (TypeUtils.isJavaBeanClass(fieldType)) {
                     String[] sendFieldNames = CastUtils.getSendFieldNames(field.getAutoBind(), field.getField());
-                    if (sendFieldNames != null && sendFieldNames.length != 0) {
+                    if (sendFieldNames != null) {
                         for (String sendFieldName : sendFieldNames) {
                             body.append(CastUtils.formatAndIndent2("map.put(\"%s\", BeanMappers.getMapper(%s, TypeWrappers.getType(Map.class), getConfig()).beanToMap(source.%s()));", sendFieldName,
                                     TypeUtils.getCanonicalNameWithSuffix(fieldType), field.getReadMethod().getName()));
@@ -270,14 +266,14 @@ public class MapperGenerater implements Generater<Mapper<?>> {
                                 autoBind.scale(), CastUtils.getRoundingModeStr(autoBind.roundingMode())));
                         body.append(CastUtils.formatAndIndent4("%s_value = CastUtils.formatDate(%s_value, \"%s\");", fieldName, fieldName, autoBind.format()));
                         String[] sendFieldNames = CastUtils.getSendFieldNames(field.getAutoBind(), field.getField());
-                        if (sendFieldNames != null && sendFieldNames.length != 0) {
+                        if (sendFieldNames != null) {
                             for (String sendFieldName : sendFieldNames) {
                                 body.append(CastUtils.formatAndIndent4("map.put(\"%s\", %s_value);", sendFieldName, fieldName));
                             }
                         }
                     } else {
                         String[] sendFieldNames = CastUtils.getSendFieldNames(field.getAutoBind(), field.getField());
-                        if (sendFieldNames != null && sendFieldNames.length != 0) {
+                        if (sendFieldNames != null) {
                             for (String sendFieldName : sendFieldNames) {
                                 body.append(CastUtils.formatAndIndent4("map.put(\"%s\", %s_value);", sendFieldName, fieldName));
                             }
@@ -300,10 +296,10 @@ public class MapperGenerater implements Generater<Mapper<?>> {
     }
     private void generateMapToBeanMethodStub(CtClass ctClass) {
         generateToBean4MapMethodStub(ctClass);
-        generateMethod(generateMapToBeanMethodBodyStub(classWrapper.getFieldNameMap()), ctClass);
+        generateMethod(generateMapToBeanMethodBodyStub(), ctClass);
     }
 
-    private String generateMapToBeanMethodBodyStub(Map<String, FieldWrapper> fieldNameMap) {
+    private String generateMapToBeanMethodBodyStub() {
         StringBuilder body = new StringBuilder();
         body.append(CastUtils.format("public Result mapToBean(Map map, Validator validator) {"));
         body.append(CastUtils.formatAndIndent2("toBean4Map(map, validator);"));

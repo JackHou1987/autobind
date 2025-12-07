@@ -14,14 +14,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.base.Strings;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 
 /**
- * @ClassName: ClassUtils
  * @Description: TODO
  * @author houqq
  * @date: 2025年3月24日
@@ -71,7 +70,6 @@ public class ClassUtils {
      * @param: @param cls
      * @param: @return
      * @return: boolean
-     * @throws
      */
     public static boolean isMapClass(Class<?> cls) {
         return cls != null && Map.class.isAssignableFrom(cls);
@@ -83,7 +81,6 @@ public class ClassUtils {
      * @param: @param cls
      * @param: @return
      * @return: boolean
-     * @throws
      */
     public static boolean isCollectionClass(Class<?> cls) {
         return cls != null && Collection.class.isAssignableFrom(cls);
@@ -306,7 +303,7 @@ public class ClassUtils {
     }
 
     public static String getArrayCanonicalName(String prefix, int dimension, String index) {
-        if (StringUtils.isEmpty(prefix) || dimension < 0) {
+        if (Strings.isNullOrEmpty(prefix) || dimension < 0) {
             return null;
         }
         if (dimension == 0) {
@@ -373,7 +370,7 @@ public class ClassUtils {
             return "";
         } else {
             StringBuilder str = new StringBuilder();
-            if (StringUtils.isEmpty(index)) {
+            if (Strings.isNullOrEmpty(index)) {
                 str.append("[]");
             } else {
                 str.append("[" + index + "]");

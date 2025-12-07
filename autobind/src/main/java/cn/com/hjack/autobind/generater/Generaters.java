@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 
 /**
- *   代码生成接口工厂{@link cn.com.hjack.autobind.Generater},主要分为三种类型:
+ * 代码生成接口工厂{@link cn.com.hjack.autobind.Generater},主要分为三种类型:
  * <ol><li>基于数组的代码生成器<li>延迟加载的代码生成<li>Mapper映射的代码生成</ol>
  * @author houqq
  * @date: 2025年10月31日

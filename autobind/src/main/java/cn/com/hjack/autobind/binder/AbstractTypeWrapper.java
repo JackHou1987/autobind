@@ -49,9 +49,7 @@ public abstract class AbstractTypeWrapper implements TypeWrapper {
         Map<String, TypeWrapper> variableTypeNameClsMap = new HashMap<>();
         // 获取当前类型参数化类型数组
         TypeWrapper[] generics = getGenerics();
-        if (generics != null && generics.length != 0 &&
-                typeParameters != null && typeParameters.length != 0 &&
-                typeParameters.length == generics.length) {
+        if (generics != null && generics.length != 0 && typeParameters.length != 0 && typeParameters.length == generics.length) {
             for (int i = 0; i < generics.length; i++) {
                 TypeWrapper genericType = getGeneric(i);
                 if (genericType == null) {

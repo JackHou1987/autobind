@@ -26,7 +26,7 @@ public class LazyLoadValueResolver implements ResolvableConverter {
 
     @Override
     public <T> Result<T> convert(Object source, TypeWrapper targetType, ResolveConfig config) {
-        DefaultResult<Object> defaultResult = new DefaultResult<Object>();
+        DefaultResult<Object> defaultResult = new DefaultResult<>();
         if (TypeUtils.isMapClass(targetType.resolve())) {
             Object proxy = Generaters.lazyLoadProxyGenerater(targetType.resolve(), () -> {
                 try {

@@ -259,7 +259,7 @@ public class NormalValueResolver extends AbstractResolvableConverter {
         }
     }
 
-    private Result<Object> convertToString(Object source, ResolveConfig config) throws Exception {
+    private Result<Object> convertToString(Object source, ResolveConfig config) {
         Result<Object> result = ResolvableConverters.getConverter(String.class).convert(source, TypeWrappers.getType(String.class), config);
         if (!result.success()) {
             return DefaultResult.errorResult(result.resultMsg());

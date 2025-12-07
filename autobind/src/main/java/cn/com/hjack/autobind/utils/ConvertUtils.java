@@ -41,7 +41,7 @@ public class ConvertUtils {
             throw new IllegalArgumentException("source or reference type can not be null");
         }
         TypeWrapper targetType = TypeWrappers.getType(TypeReference.class, reference.getClass());
-        if (targetType == null || targetType.getGeneric(0) == null) {
+        if (targetType.getGeneric(0) == null) {
             throw new IllegalStateException("reference generic type can not be null");
         }
         Class<?> targetCls = targetType.getGeneric(0).resolve();

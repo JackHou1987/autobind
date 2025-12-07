@@ -8,21 +8,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 
 
 /**
- * @ClassName: ClassLoadUtils
  * @Description: TODO
  * @author houqq
  * @date: 2025年8月28日
- *
  */
 public class ServiceLoaderUtils {
 
@@ -34,9 +32,7 @@ public class ServiceLoaderUtils {
         } else {
             Set<T> sets = new HashSet<>();
             ServiceLoader<T> serviceLoader = ServiceLoader.load(type);
-            Iterator<T> iterator = serviceLoader.iterator();
-            while (iterator.hasNext()) {
-                T instance = iterator.next();
+            for (T instance : serviceLoader) {
                 sets.add(instance);
             }
             return sets;
@@ -72,7 +68,7 @@ public class ServiceLoaderUtils {
         if (keyNames == null || keyNames.length == 0) {
             return result;
         }
-        try (InputStream is = url.openStream(); BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+        try (InputStream is = url.openStream(); BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
             for (String keyName : keyNames) {
                 for (;;) {
                     String line = reader.readLine();
@@ -86,13 +82,13 @@ public class ServiceLoaderUtils {
                     } else {
                         continue;
                     }
-                    if (lineKey.length() == 0) {
+                    if (lineKey.isEmpty()) {
                         continue;
                     }
                     if (!Objects.equals(lineKey, keyName)) {
                         continue;
                     }
-                    result.add(line.substring(index + 1, line.length()));
+                    result.add(line.substring(index + 1));
                 }
             }
         }

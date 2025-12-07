@@ -22,8 +22,8 @@ package cn.com.hjack.autobind;
 public interface ResolvableConverter {
 
     /**
-     *   将源对象转为目标对象，目标类型是{@link cn.com.hjack.autobind.TypeWrapper}，
-     *   是一种封装了Type可解析包括泛型的类型，{@link cn.com.hjack.autobind.ResolveConfig}是解析时的配置
+     * 将源对象转为目标对象，目标类型是{@link cn.com.hjack.autobind.TypeWrapper}，
+     * 是一种封装了Type可解析包括泛型的类型，{@link cn.com.hjack.autobind.ResolveConfig}是解析时的配置
      * @param source 源对象
      * @param targetType 目标类型
      * @param config 运行时配置
