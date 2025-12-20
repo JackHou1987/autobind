@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
  * @date: 2025年11月5日
  *
  */
-public class MapperGenerater implements Generater<BeanMapper<?>> {
+public class BeanMapperGenerater implements Generater<BeanMapper<?>> {
 
     // key -> java bean class value -> mapper
     private static Map<Class<?>, BeanMapper<?>> toMapCache = new ConcurrentHashMap<>();
@@ -43,7 +43,7 @@ public class MapperGenerater implements Generater<BeanMapper<?>> {
 
     private ClassWrapper classWrapper;
 
-    public MapperGenerater(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
+    public BeanMapperGenerater(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
         if (sourceClass == null) {
             throw new IllegalStateException("source class can not be null");
         }

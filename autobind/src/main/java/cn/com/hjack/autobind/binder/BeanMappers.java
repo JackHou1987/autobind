@@ -31,7 +31,7 @@ public class BeanMappers {
             Class<?> targetClass = targetType.resolveOrObject();
             if (TypeUtils.isJavaBeanClass(targetClass)) {
                 if (resolveConfig.fastMode()) {
-                    return CastUtils.castSafe(Generaters.mapperGenerater(sourceClass, targetType, resolveConfig).generate());
+                    return CastUtils.castSafe(Generaters.beanMapperGenerater(sourceClass, targetType, resolveConfig).generate());
                 } else {
                     try {
                         return new DefaultBeanMapper<>(CastUtils.castSafe(targetType.resolve().newInstance()), targetType.resolveVariableContext(), resolveConfig);
@@ -41,7 +41,7 @@ public class BeanMappers {
                 }
             } else if (TypeUtils.isMapClass(targetClass)) {
                 if (resolveConfig.fastMode()) {
-                    return CastUtils.castSafe(Generaters.mapperGenerater(sourceClass, targetType, resolveConfig).generate());
+                    return CastUtils.castSafe(Generaters.beanMapperGenerater(sourceClass, targetType, resolveConfig).generate());
                 } else {
                     try {
                         return new DefaultBeanMapper<>(CastUtils.castSafe(TypeUtils.createMap(targetClass)), new HashMap<>(), config);

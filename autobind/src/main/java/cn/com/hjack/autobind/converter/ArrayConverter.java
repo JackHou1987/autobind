@@ -38,7 +38,7 @@ public class ArrayConverter extends AbstractResolvableConverter {
             return DefaultResult.errorResult("target type must be array");
         }
         if (config != null && config.fastMode()) {
-            ResolvableConverter converter = Generaters.arrayResolverGenerater(object.getClass(), targetType).generate();
+            ResolvableConverter converter = Generaters.arrayConverterGenerater(object.getClass(), targetType).generate();
             if (converter == null) {
                 return DefaultResult.errorResult("generate array resolver error");
             } else {

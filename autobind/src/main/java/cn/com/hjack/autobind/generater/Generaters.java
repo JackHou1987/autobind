@@ -15,11 +15,11 @@ import java.util.function.Supplier;
  * @date: 2025年10月31日
  * @see ArrayConverterGenerater
  * @see cn.com.hjack.autobind.generater.LazyLoadProxyGenerater
- * @see cn.com.hjack.autobind.generater.MapperGenerater
+ * @see BeanMapperGenerater
  */
 public class Generaters {
 
-    public static Generater<ResolvableConverter> arrayResolverGenerater(Class<?> sourceClass, TypeWrapper targetType) {
+    public static Generater<ResolvableConverter> arrayConverterGenerater(Class<?> sourceClass, TypeWrapper targetType) {
         return new ArrayConverterGenerater(sourceClass, targetType);
     }
 
@@ -27,7 +27,7 @@ public class Generaters {
         return new LazyLoadProxyGenerater(targetClass, supplier);
     }
 
-    public static Generater<BeanMapper<?>> mapperGenerater(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
-        return new MapperGenerater(sourceClass, targetType, config);
+    public static Generater<BeanMapper<?>> beanMapperGenerater(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
+        return new BeanMapperGenerater(sourceClass, targetType, config);
     }
 }
