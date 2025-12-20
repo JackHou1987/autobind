@@ -18,16 +18,16 @@ import java.time.LocalTime;
 
 
 /**
- * @ClassName: SqlDateValueResolver
+ * @ClassName: SqlDateConverter
  * @Description: TODO
  * @author houqq
  * @date: 2025年9月5日
  */
-public class SqlDateValueResolver extends AbstractResolvableConverter {
+public class SqlDateConverter extends AbstractResolvableConverter {
 
-    public static SqlDateValueResolver instance = new SqlDateValueResolver();
+    public static SqlDateConverter instance = new SqlDateConverter();
 
-    private SqlDateValueResolver() {
+    private SqlDateConverter() {
 
     }
 

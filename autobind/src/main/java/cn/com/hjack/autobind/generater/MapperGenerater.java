@@ -27,13 +27,13 @@ import com.google.common.base.Strings;
  * @date: 2025年11月5日
  *
  */
-public class MapperGenerater implements Generater<Mapper<?>> {
+public class MapperGenerater implements Generater<BeanMapper<?>> {
 
     // key -> java bean class value -> mapper
-    private static Map<Class<?>, Mapper<?>> toMapCache = new ConcurrentHashMap<>();
+    private static Map<Class<?>, BeanMapper<?>> toMapCache = new ConcurrentHashMap<>();
 
     // outerkey -> target class inner key -> source class
-    private static Map<Class<?>, Map<Class<?>, Mapper<?>>> toJavaBeanMapperCache = new ConcurrentHashMap<>();
+    private static Map<Class<?>, Map<Class<?>, BeanMapper<?>>> toJavaBeanMapperCache = new ConcurrentHashMap<>();
 
     private TypeWrapper targetType;
 
@@ -62,7 +62,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
     }
 
     @Override
-    public Mapper<?> generate() {
+    public BeanMapper<?> generate() {
         Class<?> targetClass = targetType.resolveOrObject();
         if (TypeUtils.isMapClass(targetClass)) {
             if (!TypeUtils.isJavaBeanClass(sourceClass)) {
@@ -78,7 +78,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
                     generateBeanToMapMethodStub(ctClass);
                     Class<?> mapperClass = ctClass.toClass();
                     Constructor<?> constructor = mapperClass.getConstructor(Object.class, Map.class, ResolveConfig.class);
-                    return (Mapper<?>) constructor.newInstance(TypeUtils.createMap(targetClass), new HashMap<>(), config);
+                    return (BeanMapper<?>) constructor.newInstance(TypeUtils.createMap(targetClass), new HashMap<>(), config);
                 } catch (Exception e) {
                     return null;
                 }
@@ -87,7 +87,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
             if (!TypeUtils.isMapClass(sourceClass) && !TypeUtils.isJavaBeanClass(sourceClass)) {
                 throw new UnsupportedOperationException("unsupport source type");
             }
-            Map<Class<?>, Mapper<?>> resovlerMap = toJavaBeanMapperCache.computeIfAbsent(targetClass, (key) -> {
+            Map<Class<?>, BeanMapper<?>> resovlerMap = toJavaBeanMapperCache.computeIfAbsent(targetClass, (key) -> {
                 return new ConcurrentHashMap<>();
             });
             return resovlerMap.computeIfAbsent(sourceClass, (key) -> {
@@ -105,7 +105,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
                     }
                     Class<?> mapperClass = ctClass.toClass();
                     Constructor<?> constructor = mapperClass.getConstructor(Object.class, Map.class, ResolveConfig.class);
-                    return (Mapper<?>) constructor.newInstance(targetType.resolveOrThrow().newInstance(), targetType.resolveVariableContext(), config);
+                    return (BeanMapper<?>) constructor.newInstance(targetType.resolveOrThrow().newInstance(), targetType.resolveVariableContext(), config);
                 } catch (Exception e) {
                     return null;
                 }
@@ -437,7 +437,7 @@ public class MapperGenerater implements Generater<Mapper<?>> {
         pool.importPackage("cn.com.hjack.autobind.converter.ResolvableConverters");
         pool.importPackage("cn.com.hjack.autobind.Result");
         pool.importPackage("cn.com.hjack.autobind.utils.CastUtils");
-        pool.importPackage("cn.com.hjack.autobind.Mapper");
+        pool.importPackage("cn.com.hjack.autobind.BeanMapper");
         pool.importPackage("cn.com.hjack.autobind.binder.BeanMappers");
         pool.importPackage("java.util.Map");
         pool.importPackage("java.util.HashMap");

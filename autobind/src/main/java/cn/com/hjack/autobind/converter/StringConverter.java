@@ -32,11 +32,11 @@ import com.google.common.base.Strings;
  * @author houqq
  * @date: 2025年7月16日
  */
-public class StringValueResolver extends AbstractResolvableConverter {
+public class StringConverter extends AbstractResolvableConverter {
 
-    public static StringValueResolver instance = new StringValueResolver();
+    public static StringConverter instance = new StringConverter();
 
-    private StringValueResolver() {
+    private StringConverter() {
         registerInternalConverter(Date.class, String.class, (value, config) -> {
             if (!Strings.isNullOrEmpty(config.format())) {
                 return new SimpleDateFormat(config.format()).format(value);

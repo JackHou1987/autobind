@@ -3,7 +3,7 @@ package cn.com.hjack.autobind.utils;
 import cn.com.hjack.autobind.*;
 import cn.com.hjack.autobind.binder.DefaultResult;
 import cn.com.hjack.autobind.binder.TypeWrappers;
-import cn.com.hjack.autobind.converter.EnumValueResolver;
+import cn.com.hjack.autobind.converter.EnumConverter;
 import cn.com.hjack.autobind.converter.ResolvableConverters;
 
 import java.time.LocalDate;
@@ -169,7 +169,7 @@ public class ConvertUtils {
         if (enumClass == null || !enumClass.isEnum()) {
             return DefaultResult.successResult(null);
         }
-        return convert(EnumValueResolver.instance, object, TypeWrappers.getType(enumClass), ResolveConfig.defaultConfig);
+        return convert(EnumConverter.instance, object, TypeWrappers.getType(enumClass), ResolveConfig.defaultConfig);
     }
 
     private static <T> Result<T> convert(ResolvableConverter resolver, Object source, TypeWrapper targetType, ResolveConfig config) {

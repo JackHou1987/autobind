@@ -18,17 +18,17 @@ import java.lang.reflect.GenericArrayType;
 import java.util.List;
 
 /**
- * @ClassName: ArrayValueResolver
+ * @ClassName: ArrayConverter
  * @Description: 数组转换器
  * @author houqq
  * @date: 2025年6月16日
  *
  */
-public class ArrayValueResolver extends AbstractResolvableConverter {
+public class ArrayConverter extends AbstractResolvableConverter {
 
-    public static ArrayValueResolver instance = new ArrayValueResolver();
+    public static ArrayConverter instance = new ArrayConverter();
 
-    private ArrayValueResolver() {
+    private ArrayConverter() {
 
     }
 
@@ -51,7 +51,7 @@ public class ArrayValueResolver extends AbstractResolvableConverter {
                 || TypeUtils.isArrayClass(targetType.getComponentType().resolve())) {
             TypeWrapper componentType = TypeWrappers.getAndResolveComponentNonArrayType(targetType);
             Class<?> componentClass = TypeUtils.getArrayClass(componentType.resolveOrObject(), TypeUtils.getArrayTypeDimension(targetType.getComponentType().getType()));
-            return convertArray(ArrayValueResolver.instance, targetType.getComponentType(), config, source, componentClass);
+            return convertArray(ArrayConverter.instance, targetType.getComponentType(), config, source, componentClass);
         } else { // 子类型非数组类型
             TypeWrapper componentType = TypeWrappers.getAndResolveComponentNonArrayType(targetType);
             ResolvableConverter valueConverter = ResolvableConverters.getConverter(componentType.resolve());

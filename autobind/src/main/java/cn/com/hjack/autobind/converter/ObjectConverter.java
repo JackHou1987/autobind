@@ -12,17 +12,17 @@ import cn.com.hjack.autobind.binder.DefaultResult;
 import cn.com.hjack.autobind.utils.CastUtils;
 
 /**
- * @ClassName: ObjectValueResolver
+ * @ClassName: ObjectConverter
  * @Description: TODO
  * @author houqq
  * @date: 2025年8月27日
  *
  */
-public class ObjectValueResolver implements ResolvableConverter {
+public class ObjectConverter implements ResolvableConverter {
 
-    public static ObjectValueResolver instance = new ObjectValueResolver();
+    public static ObjectConverter instance = new ObjectConverter();
 
-    private ObjectValueResolver() {
+    private ObjectConverter() {
 
     }
 

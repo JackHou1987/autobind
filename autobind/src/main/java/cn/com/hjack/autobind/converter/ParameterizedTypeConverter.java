@@ -11,7 +11,6 @@ import cn.com.hjack.autobind.utils.CastUtils;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -31,11 +30,11 @@ import java.util.stream.Stream;
  * @author houqq
  * @date: 2025年9月4日
  */
-public class ParameterizedTypeValueResolver extends AbstractResolvableConverter {
+public class ParameterizedTypeConverter extends AbstractResolvableConverter {
 
-    public static ParameterizedTypeValueResolver instance = new ParameterizedTypeValueResolver();
+    public static ParameterizedTypeConverter instance = new ParameterizedTypeConverter();
 
-    private ParameterizedTypeValueResolver() {
+    private ParameterizedTypeConverter() {
 
     }
     @Override

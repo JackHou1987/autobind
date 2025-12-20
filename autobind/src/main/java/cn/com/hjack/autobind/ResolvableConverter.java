@@ -3,14 +3,16 @@
  */
 package cn.com.hjack.autobind;
 
+import cn.com.hjack.autobind.converter.*;
+
 /**
  *  一种可解析的类型转换器，内部预置了通用的转换器，分为
  * <ol>
- * <li>map conveter {@link cn.com.hjack.autobind.converter.MapValueResolver}
- * <li>array conveter {@link cn.com.hjack.autobind.converter.ArrayValueResolver}
- * <li>collection conveter {@link cn.com.hjack.autobind.converter.CollectionValueResolver}
- * <li>number conveter {@link cn.com.hjack.autobind.converter.NumberValueResolver}
- * <li>String conveter {@link cn.com.hjack.autobind.converter.StringValueResolver}
+ * <li>map conveter {@link MapConverter}
+ * <li>array conveter {@link ArrayConverter}
+ * <li>collection conveter {@link CollectionConverter}
+ * <li>number conveter {@link NumberConverter}
+ * <li>String conveter {@link StringConverter}
  * </ol>等，可用于大部分类型转换场景
  * @author houqq
  * @date: 2025年6月16日

@@ -106,47 +106,47 @@ public class ResolvableConverters {
             AtomicLong.class, AtomicInteger.class, AtomicBoolean.class};
 
     static {
-        resolvableConverters.put(Collection.class, CollectionValueResolver.instance);
-        resolvableConverters.put(List.class, CollectionValueResolver.instance);
-        resolvableConverters.put(ArrayList.class, CollectionValueResolver.instance);
-        resolvableConverters.put(LinkedList.class, CollectionValueResolver.instance);
-        resolvableConverters.put(CopyOnWriteArrayList.class, CollectionValueResolver.instance);
-        resolvableConverters.put(Set.class, CollectionValueResolver.instance);
-        resolvableConverters.put(SortedSet.class, CollectionValueResolver.instance);
-        resolvableConverters.put(NavigableSet.class, CollectionValueResolver.instance);
-        resolvableConverters.put(LinkedHashSet.class, CollectionValueResolver.instance);
-        resolvableConverters.put(TreeSet.class, CollectionValueResolver.instance);
-        resolvableConverters.put(HashSet.class, CollectionValueResolver.instance);
-        resolvableConverters.put(CopyOnWriteArraySet.class, CollectionValueResolver.instance);
-        resolvableConverters.put(Map.class, MapValueResolver.instance);
-        resolvableConverters.put(SortedMap.class, MapValueResolver.instance);
-        resolvableConverters.put(NavigableMap.class, MapValueResolver.instance);
-        resolvableConverters.put(TreeMap.class, MapValueResolver.instance);
-        resolvableConverters.put(HashMap.class, MapValueResolver.instance);
-        resolvableConverters.put(LinkedHashMap.class, MapValueResolver.instance);
-        resolvableConverters.put(ConcurrentHashMap.class, MapValueResolver.instance);
+        resolvableConverters.put(Collection.class, CollectionConverter.instance);
+        resolvableConverters.put(List.class, CollectionConverter.instance);
+        resolvableConverters.put(ArrayList.class, CollectionConverter.instance);
+        resolvableConverters.put(LinkedList.class, CollectionConverter.instance);
+        resolvableConverters.put(CopyOnWriteArrayList.class, CollectionConverter.instance);
+        resolvableConverters.put(Set.class, CollectionConverter.instance);
+        resolvableConverters.put(SortedSet.class, CollectionConverter.instance);
+        resolvableConverters.put(NavigableSet.class, CollectionConverter.instance);
+        resolvableConverters.put(LinkedHashSet.class, CollectionConverter.instance);
+        resolvableConverters.put(TreeSet.class, CollectionConverter.instance);
+        resolvableConverters.put(HashSet.class, CollectionConverter.instance);
+        resolvableConverters.put(CopyOnWriteArraySet.class, CollectionConverter.instance);
+        resolvableConverters.put(Map.class, MapConverter.instance);
+        resolvableConverters.put(SortedMap.class, MapConverter.instance);
+        resolvableConverters.put(NavigableMap.class, MapConverter.instance);
+        resolvableConverters.put(TreeMap.class, MapConverter.instance);
+        resolvableConverters.put(HashMap.class, MapConverter.instance);
+        resolvableConverters.put(LinkedHashMap.class, MapConverter.instance);
+        resolvableConverters.put(ConcurrentHashMap.class, MapConverter.instance);
         for (Class<?> dateType : dateTypes) {
-            resolvableConverters.put(dateType, DateValueResolver.instance);
+            resolvableConverters.put(dateType, DateConverter.instance);
         }
         for (Class<?> dateType : sqlDateTypes) {
-            resolvableConverters.put(dateType, SqlDateValueResolver.instance);
+            resolvableConverters.put(dateType, SqlDateConverter.instance);
         }
         for (Class<?> numberType : numberTypes) {
-            resolvableConverters.put(numberType, NumberValueResolver.instance);
+            resolvableConverters.put(numberType, NumberConverter.instance);
         }
         for (Class<?> genericType : genericTypes) {
-            resolvableConverters.put(genericType, ParameterizedTypeValueResolver.instance);
+            resolvableConverters.put(genericType, ParameterizedTypeConverter.instance);
         }
         for (Class<?> stringType : stringTypes) {
-            resolvableConverters.put(stringType, StringValueResolver.instance);
+            resolvableConverters.put(stringType, StringConverter.instance);
         }
         for (Class<?> normalType : normalTypes) {
-            resolvableConverters.put(normalType, NormalValueResolver.instance);
+            resolvableConverters.put(normalType, NormalConverter.instance);
         }
         for (Class<?> atomicType : atomicTypes) {
-            resolvableConverters.put(atomicType, AtomicValueResolver.instance);
+            resolvableConverters.put(atomicType, AtomicConverter.instance);
         }
-        resolvableConverters.put(Object.class, ObjectValueResolver.instance);
+        resolvableConverters.put(Object.class, ObjectConverter.instance);
     }
     /**
      * @Title: getResolver
@@ -163,9 +163,9 @@ public class ResolvableConverters {
             return valueResolver;
         }
         if (TypeUtils.isArrayClass(targetClass)) {
-            return ArrayValueResolver.instance;
+            return ArrayConverter.instance;
         } else if (TypeUtils.isEnumClass(targetClass)) {
-            return EnumValueResolver.instance;
+            return EnumConverter.instance;
         } else if (TypeUtils.isJavaBeanClass(targetClass)) {
             return resolvableConverters.computeIfAbsent(targetClass, (key) -> {
                 return JavaBeanValueResolver.instance;
@@ -187,7 +187,7 @@ public class ResolvableConverters {
         }
         if (targetType.getFieldGenericType() instanceof TypeVariable
                 || targetType.getFieldGenericType() instanceof WildcardType) {
-            return VariableValueResolver.instance;
+            return VariableConverter.instance;
         } else {
             Class<?> targetTypeClass = targetType.resolve();
             ResolvableConverter valueResolver = resolvableConverters.get(targetTypeClass);
@@ -195,9 +195,9 @@ public class ResolvableConverters {
                 return valueResolver;
             }
             if (TypeUtils.isArrayClass(targetTypeClass)) {
-                return ArrayValueResolver.instance;
+                return ArrayConverter.instance;
             } else if (TypeUtils.isEnumClass(targetTypeClass)) {
-                return EnumValueResolver.instance;
+                return EnumConverter.instance;
             } else if (TypeUtils.isJavaBeanClass(targetTypeClass)) {
                 return resolvableConverters.computeIfAbsent(targetTypeClass, (key) -> {
                     return JavaBeanValueResolver.instance;
@@ -214,16 +214,16 @@ public class ResolvableConverters {
         }
         if (field.getGenericType() instanceof TypeVariable
                 || field.getGenericType() instanceof WildcardType) {
-            return VariableValueResolver.instance;
+            return VariableConverter.instance;
         } else {
             ResolvableConverter valueResolver = resolvableConverters.get(fieldClass);
             if (valueResolver != null) {
                 return valueResolver;
             }
             if (TypeUtils.isArrayClass(fieldClass)) {
-                return ArrayValueResolver.instance;
+                return ArrayConverter.instance;
             } else if (TypeUtils.isEnumClass(fieldClass)) {
-                return EnumValueResolver.instance;
+                return EnumConverter.instance;
             } else if (TypeUtils.isJavaBeanClass(fieldClass)) {
                 return resolvableConverters.computeIfAbsent(fieldClass, (key) -> JavaBeanValueResolver.instance);
             } else {

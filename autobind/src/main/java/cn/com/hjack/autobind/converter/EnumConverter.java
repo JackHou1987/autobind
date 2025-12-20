@@ -14,16 +14,16 @@ import java.util.Objects;
 
 
 /**
- * @ClassName: EnumValueResolver
+ * @ClassName: EnumConverter
  * @Description: TODO
  * @author houqq
  * @date: 2025年9月1日
  */
-public class EnumValueResolver extends AbstractResolvableConverter {
+public class EnumConverter extends AbstractResolvableConverter {
 
-    public static EnumValueResolver instance = new EnumValueResolver();
+    public static EnumConverter instance = new EnumConverter();
 
-    private EnumValueResolver() {
+    private EnumConverter() {
 
     }
 

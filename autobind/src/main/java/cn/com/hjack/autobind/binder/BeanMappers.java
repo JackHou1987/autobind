@@ -3,7 +3,7 @@
  */
 package cn.com.hjack.autobind.binder;
 
-import cn.com.hjack.autobind.Mapper;
+import cn.com.hjack.autobind.BeanMapper;
 import cn.com.hjack.autobind.ResolveConfig;
 import cn.com.hjack.autobind.TypeWrapper;
 import cn.com.hjack.autobind.generater.Generaters;
@@ -23,7 +23,7 @@ import java.util.Optional;
  */
 public class BeanMappers {
 
-    public static <T> Mapper<T> getMapper(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
+    public static <T> BeanMapper<T> getMapper(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
         if (targetType == null) {
             throw new IllegalStateException("get mapper error, unkown type");
         } else {

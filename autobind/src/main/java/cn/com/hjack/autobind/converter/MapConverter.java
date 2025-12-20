@@ -19,11 +19,11 @@ import java.util.Map;
  * @author houqq
  * @date: 2025年6月16日
  */
-public class MapValueResolver extends AbstractResolvableConverter {
+public class MapConverter extends AbstractResolvableConverter {
 
-    public static MapValueResolver instance = new MapValueResolver();
+    public static MapConverter instance = new MapConverter();
 
-    private MapValueResolver() {
+    private MapConverter() {
 
     }
 

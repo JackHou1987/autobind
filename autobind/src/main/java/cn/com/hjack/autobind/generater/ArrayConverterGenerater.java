@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date: 2025年10月31日
  *
  */
-public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
+public class ArrayConverterGenerater implements Generater<ResolvableConverter> {
 
     private static final String GET_RESOLVER_CODE = "ResolvableConverter resolver = ResolvableConverters.getConverter(%s);";
 
@@ -39,7 +39,7 @@ public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
 
     private TypeWrapper targetType;
 
-    public ArrayResolverGenerater(Class<?> sourceClass, TypeWrapper targetType) {
+    public ArrayConverterGenerater(Class<?> sourceClass, TypeWrapper targetType) {
         if (sourceClass == null || targetType == null || targetType.resolve() == null) {
             throw new IllegalStateException("source or target type can not be null");
         }
@@ -71,7 +71,7 @@ public class ArrayResolverGenerater implements Generater<ResolvableConverter> {
     }
 
     private CtClass generateArrayResolverClass(ClassPool pool, Class<?> sourceClass, Class<?> arrayClass) throws Exception {
-        CtClass cls = pool.makeClass(CastUtils.formatWithNoNewLine("cn.com.hjack.autobind.converter.ArrayValueResolver%s$%s$Proxy", sourceClass.getName(), arrayClass.getName()));
+        CtClass cls = pool.makeClass(CastUtils.formatWithNoNewLine("cn.com.hjack.autobind.converter.ArrayConverter%s$%s$Proxy", sourceClass.getName(), arrayClass.getName()));
         cls.setSuperclass(pool.get("cn.com.hjack.autobind.converter.AbstractResolvableConverter"));
         return cls;
     }

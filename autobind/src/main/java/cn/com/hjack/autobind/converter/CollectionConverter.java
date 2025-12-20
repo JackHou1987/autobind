@@ -14,16 +14,16 @@ import java.util.List;
 
 
 /**
- * @ClassName: CollectionValueResolver
+ * @ClassName: CollectionConverter
  * @Description: TODO
  * @author houqq
  * @date: 2025年6月16日
  */
-public class CollectionValueResolver extends AbstractResolvableConverter {
+public class CollectionConverter extends AbstractResolvableConverter {
 
-    public static CollectionValueResolver instance = new CollectionValueResolver();
+    public static CollectionConverter instance = new CollectionConverter();
 
-    private CollectionValueResolver() {
+    private CollectionConverter() {
 
     }
 

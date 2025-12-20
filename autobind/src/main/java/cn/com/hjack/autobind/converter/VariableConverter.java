@@ -16,11 +16,11 @@ import cn.com.hjack.autobind.binder.DefaultResult;
  * @date: 2025年6月16日
  *
  */
-public class VariableValueResolver extends AbstractResolvableConverter {
+public class VariableConverter extends AbstractResolvableConverter {
 
-    public static VariableValueResolver instance = new VariableValueResolver();
+    public static VariableConverter instance = new VariableConverter();
 
-    private VariableValueResolver() {
+    private VariableConverter() {
 
     }
 

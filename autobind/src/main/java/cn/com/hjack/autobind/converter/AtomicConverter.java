@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * @author houqq
  * @date: 2025年9月2日
  */
-public class AtomicValueResolver extends AbstractResolvableConverter {
+public class AtomicConverter extends AbstractResolvableConverter {
 
-    public static AtomicValueResolver instance = new AtomicValueResolver();
+    public static AtomicConverter instance = new AtomicConverter();
 
-    private AtomicValueResolver() {
+    private AtomicConverter() {
 
     }
 

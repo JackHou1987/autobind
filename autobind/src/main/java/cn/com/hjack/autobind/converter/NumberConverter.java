@@ -22,11 +22,11 @@ import com.google.common.base.Strings;
  * @author houqq
  * @date: 2025年7月11日
  */
-public class NumberValueResolver extends AbstractResolvableConverter {
+public class NumberConverter extends AbstractResolvableConverter {
 
-    public static NumberValueResolver instance = new NumberValueResolver();
+    public static NumberConverter instance = new NumberConverter();
 
-    private NumberValueResolver() {
+    private NumberConverter() {
         registerInternalConverter(Number.class, Byte.class, (value, config) -> {
             if (value == null) {
                 return null;

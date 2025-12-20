@@ -24,11 +24,11 @@ import java.util.Objects;
  * @author houqq
  * @date: 2025年7月10日
  */
-public class DateValueResolver extends AbstractResolvableConverter {
+public class DateConverter extends AbstractResolvableConverter {
 
-    public static DateValueResolver instance = new DateValueResolver();
+    public static DateConverter instance = new DateConverter();
 
-    private DateValueResolver() {
+    private DateConverter() {
         registerToDateConverters();
         registerToInstantConverters();
         registerToCalendarConverters();

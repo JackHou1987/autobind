@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
  * @date: 2025年11月5日
  *
  */
-public abstract class AbstractBeanMapper<T> implements Mapper<T> {
+public abstract class AbstractBeanMapper<T> implements BeanMapper<T> {
 
     private List<Validator> internalValidators = new ArrayList<>();
 
@@ -182,7 +182,7 @@ public abstract class AbstractBeanMapper<T> implements Mapper<T> {
                 if (field == null) {
                     return;
                 }
-                Mapper<?> beanMapper = fieldEditor.getMapper();
+                BeanMapper<?> beanMapper = fieldEditor.getMapper();
                 if (beanMapper == null || beanMapper.getTarget() == null) {
                     return;
                 }

@@ -138,7 +138,7 @@ public class Test {
         stopwatch1.stop();
         Stopwatch stopwatch = Stopwatch.createStarted();
         for (int i = 0; i < 1; i++) {
-            ResolveConfig config = ResolveConfig.builder().fastMode(true).build();
+            ResolveConfig config = ResolveConfig.builder().fastMode(false).build();
             Result<Target<Target.TargetSub3<String, Integer>>> result = ConvertUtils.toObject(source, new TypeReference<Target<Target.TargetSub3<String, Integer>>>() {}, config);
             System.out.println(JSONObject.toJSONString(result.instance(), SerializerFeature.SortField));
         }

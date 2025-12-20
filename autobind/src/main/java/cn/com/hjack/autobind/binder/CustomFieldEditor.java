@@ -58,7 +58,7 @@ public class CustomFieldEditor {
         this.source = source;
     }
 
-    public Mapper<?> getMapper() {
+    public BeanMapper<?> getMapper() {
         return mapper;
     }
 

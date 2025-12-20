@@ -31,11 +31,11 @@ import java.util.UUID;
  * @author houqq
  * @date: 2025年8月25日
  */
-public class NormalValueResolver extends AbstractResolvableConverter {
+public class NormalConverter extends AbstractResolvableConverter {
 
-    public static NormalValueResolver instance = new NormalValueResolver();
+    public static NormalConverter instance = new NormalConverter();
 
-    private NormalValueResolver() {
+    private NormalConverter() {
 
     }
 

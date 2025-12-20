@@ -18,7 +18,7 @@ import java.util.Map;
  * @see cn.com.hjack.autobind.ResolvableConverter
  * @see cn.com.hjack.autobind.Validator
  */
-public interface Mapper<T> {
+public interface BeanMapper<T> {
 
     /**
      * map转为javabean，当javabean字段注解autofield指定recvFieldName则key为recvFieldName的值，否则key为字段的名称
