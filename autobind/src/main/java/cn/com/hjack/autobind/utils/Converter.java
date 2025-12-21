@@ -16,13 +16,13 @@ import java.util.Optional;
 
 
 /**
- * @ClassName: ConvertUtils
+ * @ClassName: Converter
  * @Description: TODO
  * @author houqq
  * @date: 2025年7月10日
  *
  */
-public class ConvertUtils {
+public class Converter {
 
     public static <T> Result<T> toObject(Object source, Class<T> targetClass) {
         return toObject(source, targetClass, null);

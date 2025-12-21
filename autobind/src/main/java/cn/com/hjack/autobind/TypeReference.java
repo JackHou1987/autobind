@@ -3,11 +3,13 @@
  */
 package cn.com.hjack.autobind;
 
+import cn.com.hjack.autobind.utils.Converter;
+
 /**
  * 用于泛型类型解析
  * @author houqq
  * @date: 2025年10月21日
- * @see cn.com.hjack.autobind.utils.ConvertUtils
+ * @see Converter
  */
 public abstract class TypeReference<T> {
 

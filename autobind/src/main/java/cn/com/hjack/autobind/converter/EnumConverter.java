@@ -56,7 +56,7 @@ public class EnumConverter extends AbstractResolvableConverter {
     }
 
     private <T> Result<T> findMatchedEnum(Class<?> enumClass, String name) {
-        Enum<?>[] enums = (Enum[]) enumClass.getEnumConstants();
+        Enum<?>[] enums = (Enum<?>[]) enumClass.getEnumConstants();
         for (Enum<?> anEnum : enums) {
             String enumName = anEnum.name();
             if (Objects.equals(name, enumName)) {

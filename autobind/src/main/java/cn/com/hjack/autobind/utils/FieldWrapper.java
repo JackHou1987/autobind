@@ -167,7 +167,6 @@ public class FieldWrapper {
          * @Title: getFieldInvokeDesc
          * @Description: 得到字段调用链字符串
          * @return: String
-         * @throws
          */
         public String getFieldInvokeDesc() {
             StringBuilder body = new StringBuilder();

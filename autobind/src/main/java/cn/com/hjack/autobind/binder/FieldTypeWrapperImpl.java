@@ -31,9 +31,9 @@ public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTy
     private TypeWrapper actualType;
 
     /**
-     * @param 当前字段
-     * @param 字段所属类
-     * @param 泛型上下文
+     * @param field 当前字段
+     * @param implClass 字段所属类
+     * @param variableContext 泛型上下文
      */
     public FieldTypeWrapperImpl(Field field, Class<?> implClass, Map<String, TypeWrapper> variableContext) {
         super(variableContext);
@@ -54,14 +54,14 @@ public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTy
     }
 
     /**
-     *   调用此构造方法的场景
+     * 调用此构造方法的场景
      * <ol>
      * <li>该字段类型为泛型， typeWrapper 参数为运行时泛型上下文中的实例
      * <li>该字段类型为参数化类型，typeWrapper 为实际参数化类型
      * </ol>
-     * @param 字段field
-     * @param 字段所属类
-     * @param 实际类型
+     * @param field 字段field
+     * @param implClass 字段所属类
+     * @param actualType 实际类型
      */
     private FieldTypeWrapperImpl(Field field, Class<?> implClass, TypeWrapper actualType) {
         if (field == null || implClass == null) {
@@ -75,9 +75,9 @@ public class FieldTypeWrapperImpl extends AbstractTypeWrapper implements FieldTy
 
     /**
      * 当该生成该字段的参数化类型时，调用此构造方法
-     * @param 字段field
-     * @param 字段所属类
-     * @param 实际类型
+     * @param field 字段field
+     * @param implClass 字段所属类
+     * @param resolvableType 实际类型
      */
     private FieldTypeWrapperImpl(Field field, Class<?> implClass, ResolvableType resolvableType) {
         if (field == null || implClass == null || resolvableType == null) {

@@ -60,7 +60,7 @@ public class LazyLoadValueResolver implements ResolvableConverter {
                 try {
                     ResolveConfig resoveConfig = Optional.ofNullable(config).orElse(ResolveConfig.defaultConfig);
                     resoveConfig = resoveConfig.removeConvertFeature(ConvertFeature.LAZY_MODE);
-                    Result<T> result = JavaBeanValueResolver.instance.convert(source, targetType, resoveConfig);
+                    Result<T> result = JavaBeanConverter.instance.convert(source, targetType, resoveConfig);
                     defaultResult.setResultMsg(result.resultMsg());
                     return result.instance();
                 } catch (Exception e) {

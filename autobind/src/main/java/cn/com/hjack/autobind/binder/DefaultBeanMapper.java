@@ -34,7 +34,7 @@ public class DefaultBeanMapper<T> extends AbstractBeanMapper<T> {
         if (source != null) {
             sourceClass = source.getClass();
         }
-        toBean4Map(BeanMappers.getMapper(sourceClass, TypeWrappers.getType(Map.class), getConfig()).beanToMap(source), validator);
+        toBean4Map(BeanMappers.getBeanMapper(sourceClass, TypeWrappers.getType(Map.class), getConfig()).beanToMap(source), validator);
         return validate();
     }
 

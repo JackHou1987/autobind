@@ -20,7 +20,7 @@ import java.util.Objects;
 
 
 /**
- *   日期converter
+ * 日期converter
  * @author houqq
  * @date: 2025年7月10日
  */
@@ -61,78 +61,38 @@ public class DateConverter extends AbstractResolvableConverter {
     }
 
     private void registerToDateConverters() {
-        registerInternalConverter(String.class, Date.class, (value, config) -> {
-            return CastUtils.parseDateTime((String) value);
-        });
-        registerInternalConverter(Date.class, Date.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(Instant.class, Date.class, (value, config) -> {
-            return Date.from(value);
-        });
-        registerInternalConverter(LocalDate.class, Date.class, (value, config) -> {
-            return Date.from(value.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        });
+        registerInternalConverter(String.class, Date.class, (value, config) -> CastUtils.parseDateTime((String) value));
+        registerInternalConverter(Date.class, Date.class, (value, config) -> value);
+        registerInternalConverter(Instant.class, Date.class, (value, config) -> Date.from(value));
+        registerInternalConverter(LocalDate.class, Date.class, (value, config) -> Date.from(value.atStartOfDay(ZoneId.systemDefault()).toInstant()));
         registerInternalConverter(LocalTime.class, Date.class, (value, config) -> {
             Instant instant = LocalDate.now().atTime(value).atZone(ZoneId.systemDefault()).toInstant();
             return Date.from(instant);
         });
-        registerInternalConverter(LocalDateTime.class, Date.class, (value, config) -> {
-            return Date.from(value.atZone(ZoneId.systemDefault()).toInstant());
-        });
-        registerInternalConverter(Calendar.class, Date.class, (value, config) -> {
-            return value.getTime();
-        });
-        registerInternalConverter(ZonedDateTime.class, Date.class, (value, config) -> {
-            return Date.from(value.toInstant());
-        });
-        registerInternalConverter(OffsetDateTime.class, Date.class, (value, config) -> {
-            return Date.from(value.toInstant());
-        });
+        registerInternalConverter(LocalDateTime.class, Date.class, (value, config) -> Date.from(value.atZone(ZoneId.systemDefault()).toInstant()));
+        registerInternalConverter(Calendar.class, Date.class, (value, config) -> value.getTime());
+        registerInternalConverter(ZonedDateTime.class, Date.class, (value, config) -> Date.from(value.toInstant()));
+        registerInternalConverter(OffsetDateTime.class, Date.class, (value, config) -> Date.from(value.toInstant()));
         registerInternalConverter(OffsetTime.class, Date.class, (value, config) -> {
             Instant instant = LocalDate.now().atTime(value).toInstant();
             return Date.from(instant);
         });
-        registerInternalConverter(Long.class, Date.class, (value, config) -> {
-            return new Date(value);
-        });
-        registerInternalConverter(long.class, Date.class, (value, config) -> {
-            return new Date(value);
-        });
+        registerInternalConverter(Long.class, Date.class, (value, config) -> new Date(value));
+        registerInternalConverter(long.class, Date.class, (value, config) -> new Date(value));
     }
 
 
     private void registerToInstantConverters() {
-        registerInternalConverter(String.class, Instant.class, (value, config) -> {
-            return Objects.requireNonNull(CastUtils.parseDateTime(value)).toInstant();
-        });
-        registerInternalConverter(Instant.class, Instant.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(Date.class, Instant.class, (value, config) -> {
-            return value.toInstant();
-        });
-        registerInternalConverter(LocalDate.class, Instant.class, (value, config) -> {
-            return value.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-        });
-        registerInternalConverter(LocalTime.class, Instant.class, (value, config) -> {
-            return LocalDate.now().atTime(value).atZone(ZoneId.systemDefault()).toInstant();
-        });
-        registerInternalConverter(LocalDateTime.class, Instant.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toInstant();
-        });
-        registerInternalConverter(Calendar.class, Instant.class, (value, config) -> {
-            return value.getTime().toInstant();
-        });
-        registerInternalConverter(ZonedDateTime.class, Instant.class, (value, config) -> {
-            return value.toInstant();
-        });
-        registerInternalConverter(OffsetDateTime.class, Instant.class, (value, config) -> {
-            return value.toInstant();
-        });
-        registerInternalConverter(OffsetTime.class, Instant.class, (value, config) -> {
-            return LocalDate.now().atTime(value).toInstant();
-        });
+        registerInternalConverter(String.class, Instant.class, (value, config) -> Objects.requireNonNull(CastUtils.parseDateTime(value)).toInstant());
+        registerInternalConverter(Instant.class, Instant.class, (value, config) -> value);
+        registerInternalConverter(Date.class, Instant.class, (value, config) -> value.toInstant());
+        registerInternalConverter(LocalDate.class, Instant.class, (value, config) -> value.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        registerInternalConverter(LocalTime.class, Instant.class, (value, config) -> LocalDate.now().atTime(value).atZone(ZoneId.systemDefault()).toInstant());
+        registerInternalConverter(LocalDateTime.class, Instant.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toInstant());
+        registerInternalConverter(Calendar.class, Instant.class, (value, config) -> value.getTime().toInstant());
+        registerInternalConverter(ZonedDateTime.class, Instant.class, (value, config) -> value.toInstant());
+        registerInternalConverter(OffsetDateTime.class, Instant.class, (value, config) -> value.toInstant());
+        registerInternalConverter(OffsetTime.class, Instant.class, (value, config) -> LocalDate.now().atTime(value).toInstant());
     }
 
     private void registerToCalendarConverters() {
@@ -146,9 +106,7 @@ public class DateConverter extends AbstractResolvableConverter {
             calendar.setTime(Date.from(value));
             return calendar;
         });
-        registerInternalConverter(Calendar.class, Calendar.class, (value, config) -> {
-            return value;
-        });
+        registerInternalConverter(Calendar.class, Calendar.class, (value, config) -> value);
         registerInternalConverter(Date.class, Calendar.class, (value, config) -> {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(value);
@@ -200,102 +158,42 @@ public class DateConverter extends AbstractResolvableConverter {
     }
 
     private void registerToLocalDateConverters() {
-        registerInternalConverter(String.class, LocalDate.class, (value, config) -> {
-            return CastUtils.parseLocalDate(value);
-        });
-        registerInternalConverter(Instant.class, LocalDate.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toLocalDate();
-        });
-        registerInternalConverter(Calendar.class, LocalDate.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        });
-        registerInternalConverter(Date.class, LocalDate.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        });
-        registerInternalConverter(LocalDate.class, LocalDate.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(LocalTime.class, LocalDate.class, (value, config) -> {
-            return LocalDate.now();
-        });
-        registerInternalConverter(LocalDateTime.class, LocalDate.class, (value, config) -> {
-            return value.toLocalDate();
-        });
-        registerInternalConverter(ZonedDateTime.class, LocalDate.class, (value, config) -> {
-            return value.toLocalDate();
-        });
-        registerInternalConverter(OffsetDateTime.class, LocalDate.class, (value, config) -> {
-            return value.toLocalDate();
-        });
-        registerInternalConverter(OffsetTime.class, LocalDate.class, (value, config) -> {
-            return LocalDate.now();
-        });
+        registerInternalConverter(String.class, LocalDate.class, (value, config) -> CastUtils.parseLocalDate(value));
+        registerInternalConverter(Instant.class, LocalDate.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toLocalDate());
+        registerInternalConverter(Calendar.class, LocalDate.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        registerInternalConverter(Date.class, LocalDate.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        registerInternalConverter(LocalDate.class, LocalDate.class, (value, config) -> value);
+        registerInternalConverter(LocalTime.class, LocalDate.class, (value, config) -> LocalDate.now());
+        registerInternalConverter(LocalDateTime.class, LocalDate.class, (value, config) -> value.toLocalDate());
+        registerInternalConverter(ZonedDateTime.class, LocalDate.class, (value, config) -> value.toLocalDate());
+        registerInternalConverter(OffsetDateTime.class, LocalDate.class, (value, config) -> value.toLocalDate());
+        registerInternalConverter(OffsetTime.class, LocalDate.class, (value, config) -> LocalDate.now());
     }
 
     private void registerToLocalTimeConverters() {
-        registerInternalConverter(String.class, LocalTime.class, (value, config) -> {
-            return CastUtils.parseLocalTime(value);
-        });
-        registerInternalConverter(Instant.class, LocalTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toLocalTime();
-        });
-        registerInternalConverter(Calendar.class, LocalTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
-        });
-        registerInternalConverter(Date.class, LocalTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
-        });
-        registerInternalConverter(LocalDate.class, LocalTime.class, (value, config) -> {
-            return LocalDate.now().atStartOfDay().toLocalTime();
-        });
-        registerInternalConverter(LocalTime.class, LocalTime.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(LocalDateTime.class, LocalTime.class, (value, config) -> {
-            return value.toLocalTime();
-        });
-        registerInternalConverter(ZonedDateTime.class, LocalTime.class, (value, config) -> {
-            return value.toLocalTime();
-        });
-        registerInternalConverter(OffsetDateTime.class, LocalTime.class, (value, config) -> {
-            return value.toLocalTime();
-        });
-        registerInternalConverter(OffsetTime.class, LocalTime.class, (value, config) -> {
-            return value.toLocalTime();
-        });
+        registerInternalConverter(String.class, LocalTime.class, (value, config) -> CastUtils.parseLocalTime(value));
+        registerInternalConverter(Instant.class, LocalTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toLocalTime());
+        registerInternalConverter(Calendar.class, LocalTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
+        registerInternalConverter(Date.class, LocalTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
+        registerInternalConverter(LocalDate.class, LocalTime.class, (value, config) -> LocalDate.now().atStartOfDay().toLocalTime());
+        registerInternalConverter(LocalTime.class, LocalTime.class, (value, config) -> value);
+        registerInternalConverter(LocalDateTime.class, LocalTime.class, (value, config) -> value.toLocalTime());
+        registerInternalConverter(ZonedDateTime.class, LocalTime.class, (value, config) -> value.toLocalTime());
+        registerInternalConverter(OffsetDateTime.class, LocalTime.class, (value, config) -> value.toLocalTime());
+        registerInternalConverter(OffsetTime.class, LocalTime.class, (value, config) -> value.toLocalTime());
     }
 
     private void registerToLocalDateTimeConverters() {
-        registerInternalConverter(String.class, LocalDateTime.class, (value, config) -> {
-            return CastUtils.parseLocalDateTime(value);
-        });
-        registerInternalConverter(Instant.class, LocalDateTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toLocalDateTime();
-        });
-        registerInternalConverter(Calendar.class, LocalDateTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        });
-        registerInternalConverter(Date.class, LocalDateTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        });
-        registerInternalConverter(LocalDate.class, LocalDateTime.class, (value, config) -> {
-            return value.atStartOfDay();
-        });
-        registerInternalConverter(LocalTime.class, LocalDateTime.class, (value, config) -> {
-            return LocalDate.now().atTime(value);
-        });
-        registerInternalConverter(LocalDateTime.class, LocalDateTime.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(ZonedDateTime.class, LocalDateTime.class, (value, config) -> {
-            return value.toLocalDateTime();
-        });
-        registerInternalConverter(OffsetDateTime.class, LocalDateTime.class, (value, config) -> {
-            return value.toLocalDateTime();
-        });
-        registerInternalConverter(OffsetTime.class, LocalDateTime.class, (value, config) -> {
-            return value.atDate(LocalDate.now()).toLocalDateTime();
-        });
+        registerInternalConverter(String.class, LocalDateTime.class, (value, config) -> CastUtils.parseLocalDateTime(value));
+        registerInternalConverter(Instant.class, LocalDateTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        registerInternalConverter(Calendar.class, LocalDateTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        registerInternalConverter(Date.class, LocalDateTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        registerInternalConverter(LocalDate.class, LocalDateTime.class, (value, config) -> value.atStartOfDay());
+        registerInternalConverter(LocalTime.class, LocalDateTime.class, (value, config) -> LocalDate.now().atTime(value));
+        registerInternalConverter(LocalDateTime.class, LocalDateTime.class, (value, config) -> value);
+        registerInternalConverter(ZonedDateTime.class, LocalDateTime.class, (value, config) -> value.toLocalDateTime());
+        registerInternalConverter(OffsetDateTime.class, LocalDateTime.class, (value, config) -> value.toLocalDateTime());
+        registerInternalConverter(OffsetTime.class, LocalDateTime.class, (value, config) -> value.atDate(LocalDate.now()).toLocalDateTime());
     }
 
     private void registerToZonedDateTimeConverters() {
@@ -308,33 +206,15 @@ public class DateConverter extends AbstractResolvableConverter {
                 return instant.atZone(ZoneId.systemDefault());
             }
         });
-        registerInternalConverter(Instant.class, ZonedDateTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault());
-        });
-        registerInternalConverter(Calendar.class, ZonedDateTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault());
-        });
-        registerInternalConverter(Date.class, ZonedDateTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault());
-        });
-        registerInternalConverter(LocalDate.class, ZonedDateTime.class, (value, config) -> {
-            return value.atStartOfDay(ZoneId.systemDefault());
-        });
-        registerInternalConverter(LocalTime.class, ZonedDateTime.class, (value, config) -> {
-            return value.atDate(LocalDate.now()).atZone(ZoneId.systemDefault());
-        });
-        registerInternalConverter(LocalDateTime.class, ZonedDateTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault());
-        });
-        registerInternalConverter(ZonedDateTime.class, ZonedDateTime.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(OffsetDateTime.class, ZonedDateTime.class, (value, config) -> {
-            return value.toZonedDateTime();
-        });
-        registerInternalConverter(OffsetTime.class, ZonedDateTime.class, (value, config) -> {
-            return value.atDate(LocalDate.now()).toZonedDateTime();
-        });
+        registerInternalConverter(Instant.class, ZonedDateTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()));
+        registerInternalConverter(Calendar.class, ZonedDateTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()));
+        registerInternalConverter(Date.class, ZonedDateTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()));
+        registerInternalConverter(LocalDate.class, ZonedDateTime.class, (value, config) -> value.atStartOfDay(ZoneId.systemDefault()));
+        registerInternalConverter(LocalTime.class, ZonedDateTime.class, (value, config) -> value.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()));
+        registerInternalConverter(LocalDateTime.class, ZonedDateTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()));
+        registerInternalConverter(ZonedDateTime.class, ZonedDateTime.class, (value, config) -> value);
+        registerInternalConverter(OffsetDateTime.class, ZonedDateTime.class, (value, config) -> value.toZonedDateTime());
+        registerInternalConverter(OffsetTime.class, ZonedDateTime.class, (value, config) -> value.atDate(LocalDate.now()).toZonedDateTime());
     }
 
     private void registerToOffsetDateTimeConverters() {
@@ -346,33 +226,15 @@ public class DateConverter extends AbstractResolvableConverter {
                 return date.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime();
             }
         });
-        registerInternalConverter(Instant.class, OffsetDateTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toOffsetDateTime();
-        });
-        registerInternalConverter(Calendar.class, OffsetDateTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime();
-        });
-        registerInternalConverter(Date.class, OffsetDateTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime();
-        });
-        registerInternalConverter(LocalDate.class, OffsetDateTime.class, (value, config) -> {
-            return value.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime();
-        });
-        registerInternalConverter(LocalTime.class, OffsetDateTime.class, (value, config) -> {
-            return value.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toOffsetDateTime();
-        });
-        registerInternalConverter(LocalDateTime.class, OffsetDateTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toOffsetDateTime();
-        });
-        registerInternalConverter(ZonedDateTime.class, OffsetDateTime.class, (value, config) -> {
-            return value.toOffsetDateTime();
-        });
-        registerInternalConverter(OffsetDateTime.class, OffsetDateTime.class, (value, config) -> {
-            return value;
-        });
-        registerInternalConverter(OffsetTime.class, OffsetDateTime.class, (value, config) -> {
-            return value.atDate(LocalDate.now());
-        });
+        registerInternalConverter(Instant.class, OffsetDateTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        registerInternalConverter(Calendar.class, OffsetDateTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        registerInternalConverter(Date.class, OffsetDateTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        registerInternalConverter(LocalDate.class, OffsetDateTime.class, (value, config) -> value.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime());
+        registerInternalConverter(LocalTime.class, OffsetDateTime.class, (value, config) -> value.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        registerInternalConverter(LocalDateTime.class, OffsetDateTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        registerInternalConverter(ZonedDateTime.class, OffsetDateTime.class, (value, config) -> value.toOffsetDateTime());
+        registerInternalConverter(OffsetDateTime.class, OffsetDateTime.class, (value, config) -> value);
+        registerInternalConverter(OffsetTime.class, OffsetDateTime.class, (value, config) -> value.atDate(LocalDate.now()));
     }
 
     private void registerToOffsetTimeConverters() {
@@ -384,32 +246,14 @@ public class DateConverter extends AbstractResolvableConverter {
                 return date.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
             }
         });
-        registerInternalConverter(Instant.class, OffsetTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(Calendar.class, OffsetTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(Date.class, OffsetTime.class, (value, config) -> {
-            return value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(LocalDate.class, OffsetTime.class, (value, config) -> {
-            return value.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(LocalTime.class, OffsetTime.class, (value, config) -> {
-            return value.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(LocalDateTime.class, OffsetTime.class, (value, config) -> {
-            return value.atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(ZonedDateTime.class, OffsetTime.class, (value, config) -> {
-            return value.toOffsetDateTime().toOffsetTime();
-        });
-        registerInternalConverter(OffsetDateTime.class, OffsetTime.class, (value, config) -> {
-            return value.toOffsetTime();
-        });
-        registerInternalConverter(OffsetTime.class, OffsetTime.class, (value, config) -> {
-            return value;
-        });
+        registerInternalConverter(Instant.class, OffsetTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(Calendar.class, OffsetTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(Date.class, OffsetTime.class, (value, config) -> value.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(LocalDate.class, OffsetTime.class, (value, config) -> value.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(LocalTime.class, OffsetTime.class, (value, config) -> value.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(LocalDateTime.class, OffsetTime.class, (value, config) -> value.atZone(ZoneId.systemDefault()).toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(ZonedDateTime.class, OffsetTime.class, (value, config) -> value.toOffsetDateTime().toOffsetTime());
+        registerInternalConverter(OffsetDateTime.class, OffsetTime.class, (value, config) -> value.toOffsetTime());
+        registerInternalConverter(OffsetTime.class, OffsetTime.class, (value, config) -> value);
     }
 }

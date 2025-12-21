@@ -68,7 +68,7 @@ public class MapConverter extends AbstractResolvableConverter {
         if (source instanceof Map) {
             return CastUtils.castSafe(source);
         } else {
-            return BeanMappers.getMapper(source.getClass(), targetType, config).beanToMap(source);
+            return BeanMappers.getBeanMapper(source.getClass(), targetType, config).beanToMap(source);
         }
     }
 

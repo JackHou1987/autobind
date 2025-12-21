@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import cn.com.hjack.autobind.ResolveConfig;
 import cn.com.hjack.autobind.Result;
 import cn.com.hjack.autobind.TypeReference;
-import cn.com.hjack.autobind.utils.ConvertUtils;
+import cn.com.hjack.autobind.utils.Converter;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.base.Stopwatch;
@@ -51,7 +51,7 @@ public class Test {
         List<Map<String, Source.SourceSub>> list = new ArrayList<>();
         list.add(map5);
 
-        Result<List<Map<String, Target.TargetSub1>>> result = ConvertUtils.toList(list, new TypeReference<List<Map<String, Target.TargetSub1>>>() {});
+        Result<List<Map<String, Target.TargetSub1>>> result = Converter.toList(list, new TypeReference<List<Map<String, Target.TargetSub1>>>() {});
         System.out.println(JSONObject.toJSONString(result.instance(), SerializerFeature.SortField));
         List<Map<String, Target.TargetSub1>> target = Convert.convert(new cn.hutool.core.lang.TypeReference<List<Map<String, Target.TargetSub1>>>() {}, list);
         System.out.println(JSONObject.toJSONString(target, SerializerFeature.SortField));
@@ -64,7 +64,7 @@ public class Test {
         sourceSub9.setSub3(new Date());
         map9.put("sub9map", sourceSub9);
         src9.add(Lists.newArrayList(map9));
-        Result<List<List<Map<String, Target.TargetSub1>>>> result2 = ConvertUtils.toList(src9, new TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {});
+        Result<List<List<Map<String, Target.TargetSub1>>>> result2 = Converter.toList(src9, new TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {});
         System.out.println(JSONObject.toJSONString(result2.instance(), SerializerFeature.SortField));
         List<List<Map<String, Target.TargetSub1>>> target2 = Convert.convert(new cn.hutool.core.lang.TypeReference<List<List<Map<String, Target.TargetSub1>>>>() {}, src9);
         System.out.println(JSONObject.toJSONString(target2, SerializerFeature.SortField));
@@ -72,23 +72,23 @@ public class Test {
     }
 
     private static void testToArray() {
-        Result<Integer[]> result = ConvertUtils.toArray(new String[] {"11", "90", "159"}, new TypeReference<Integer[]>() {});
+        Result<Integer[]> result = Converter.toArray(new String[] {"11", "90", "159"}, new TypeReference<Integer[]>() {});
         System.out.println(JSONObject.toJSONString(result.instance()));
-        Result<Object[]> result1 = ConvertUtils.toArray("786");
+        Result<Object[]> result1 = Converter.toArray("786");
         System.out.println(JSONObject.toJSONString(result1.instance()));
     }
 
     private static void testToString() {
-        Result<String> result = ConvertUtils.toBinary(16);
+        Result<String> result = Converter.toBinary(16);
         System.out.println(JSONObject.toJSONString(result.instance()));
-        Result<String> result2 = ConvertUtils.toString(new IllegalStateException(""));
+        Result<String> result2 = Converter.toString(new IllegalStateException(""));
         System.out.println(JSONObject.toJSONString(result2.instance()));
     }
 
     private static void testToDate() {
-        Result<LocalDateTime> result = ConvertUtils.toLocalDateTime(new Date());
+        Result<LocalDateTime> result = Converter.toLocalDateTime(new Date());
         System.out.println(JSONObject.toJSONString(result.instance()));
-        Result<LocalDate> result1 = ConvertUtils.toLocalDate(new Date());
+        Result<LocalDate> result1 = Converter.toLocalDate(new Date());
         System.out.println(JSONObject.toJSONString(result1.instance()));
     }
 
@@ -139,7 +139,7 @@ public class Test {
         Stopwatch stopwatch = Stopwatch.createStarted();
         for (int i = 0; i < 1; i++) {
             ResolveConfig config = ResolveConfig.builder().fastMode(false).build();
-            Result<Target<Target.TargetSub3<String, Integer>>> result = ConvertUtils.toObject(source, new TypeReference<Target<Target.TargetSub3<String, Integer>>>() {}, config);
+            Result<Target<Target.TargetSub3<String, Integer>>> result = Converter.toObject(source, new TypeReference<Target<Target.TargetSub3<String, Integer>>>() {}, config);
             System.out.println(JSONObject.toJSONString(result.instance(), SerializerFeature.SortField));
         }
         System.out.println(stopwatch.elapsed(TimeUnit.MILLISECONDS));

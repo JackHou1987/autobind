@@ -218,11 +218,10 @@ public abstract class AbstractBeanMapper<T> implements BeanMapper<T> {
 
     /**
      * 依据receiveFieldName找到map中key对应的value
-     * @param 待查找的map
-     * @param 待查找的key名称
-     * @param 字段class
-     * @param 默认值
-     * @param 是否嵌套搜索
+     * @param map 待查找的map
+     * @param keyName 待查找的key名称
+     * @param defaultValue 默认值
+     * @param deepSeek 是否嵌套搜索
      * @return keyName对应的value
      */
     public static Object getValueOrDefault(Map<String, Object> map, String keyName, String defaultValue, boolean deepSeek) {

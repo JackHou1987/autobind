@@ -11,8 +11,7 @@ import org.springframework.core.ResolvableType;
 
 
 /**
- * @ClassName: TypeWrapperImpl
- * @Description: TODO
+ * TypeWrapperImpl
  * @author houqq
  * @date: 2025年6月23日
  *

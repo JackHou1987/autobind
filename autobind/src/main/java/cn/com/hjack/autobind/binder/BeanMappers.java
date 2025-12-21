@@ -15,15 +15,13 @@ import java.util.Optional;
 
 
 /**
- * @ClassName: Mappers
- * @Description: TODO
+ * BeanMappers
  * @author houqq
  * @date: 2025年11月10日
- *
  */
 public class BeanMappers {
 
-    public static <T> BeanMapper<T> getMapper(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
+    public static <T> BeanMapper<T> getBeanMapper(Class<?> sourceClass, TypeWrapper targetType, ResolveConfig config) {
         if (targetType == null) {
             throw new IllegalStateException("get mapper error, unkown type");
         } else {

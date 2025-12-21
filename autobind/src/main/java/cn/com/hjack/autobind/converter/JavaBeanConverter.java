@@ -12,17 +12,17 @@ import cn.com.hjack.autobind.utils.CastUtils;
 import cn.com.hjack.autobind.utils.TypeUtils;
 
 /**
- * @ClassName: JavaBeanValueResolver
+ * @ClassName: JavaBeanConverter
  * @Description: TODO
  * @author houqq
  * @date: 2025年6月16日
  *
  */
-public class JavaBeanValueResolver extends AbstractResolvableConverter {
+public class JavaBeanConverter extends AbstractResolvableConverter {
 
-    public static JavaBeanValueResolver instance = new JavaBeanValueResolver();
+    public static JavaBeanConverter instance = new JavaBeanConverter();
 
-    private JavaBeanValueResolver() {
+    private JavaBeanConverter() {
 
     }
 
@@ -44,7 +44,7 @@ public class JavaBeanValueResolver extends AbstractResolvableConverter {
         if (ConvertFeature.isEnabled(config.convertFeature(), ConvertFeature.LAZY_MODE)) {
             return ResolvableConverters.getLazyLoadValueResolver().convert(source, targetType, config);
         }
-        BeanMapper<T> mapper = BeanMappers.getMapper(source.getClass(), targetType, config);
+        BeanMapper<T> mapper = BeanMappers.getBeanMapper(source.getClass(), targetType, config);
         Result<T> result;
         if (TypeUtils.isMapClass(source.getClass())) {
             result = mapper.mapToBean(CastUtils.toMap((Map<?, ?>) source), config.validator());

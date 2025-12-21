@@ -168,7 +168,7 @@ public class ResolvableConverters {
             return EnumConverter.instance;
         } else if (TypeUtils.isJavaBeanClass(targetClass)) {
             return resolvableConverters.computeIfAbsent(targetClass, (key) -> {
-                return JavaBeanValueResolver.instance;
+                return JavaBeanConverter.instance;
             });
         } else {
             return null;
@@ -200,7 +200,7 @@ public class ResolvableConverters {
                 return EnumConverter.instance;
             } else if (TypeUtils.isJavaBeanClass(targetTypeClass)) {
                 return resolvableConverters.computeIfAbsent(targetTypeClass, (key) -> {
-                    return JavaBeanValueResolver.instance;
+                    return JavaBeanConverter.instance;
                 });
             } else {
                 return null;
@@ -225,7 +225,7 @@ public class ResolvableConverters {
             } else if (TypeUtils.isEnumClass(fieldClass)) {
                 return EnumConverter.instance;
             } else if (TypeUtils.isJavaBeanClass(fieldClass)) {
-                return resolvableConverters.computeIfAbsent(fieldClass, (key) -> JavaBeanValueResolver.instance);
+                return resolvableConverters.computeIfAbsent(fieldClass, (key) -> JavaBeanConverter.instance);
             } else {
                 return null;
             }
